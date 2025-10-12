@@ -11,8 +11,10 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Loader2, Users, DollarSign } from "lucide-react";
-import { useState, useEffect } from "react";
-import { GroupMember } from "@/types/dashboard";
+import { useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useDashboard } from "@/contexts/DashboardContext";
+import { fetchGroupDetail } from "@/hooks/useGroups";
 
 interface CreateExpenseDialogProps {
   isOpen: boolean;
@@ -29,7 +31,6 @@ interface CreateExpenseDialogProps {
   }) => void;
   onSubmit: () => void;
   isCreating: boolean;
-  groupMembers: GroupMember[];
 }
 
 export default function CreateExpenseDialog({
@@ -39,14 +40,26 @@ export default function CreateExpenseDialog({
   onExpenseChange,
   onSubmit,
   isCreating,
-  groupMembers,
 }: CreateExpenseDialogProps) {
+  const { selectedGroupId } = useDashboard();
   const [splitMode, setSplitMode] = useState<"equal" | "custom">("equal");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
 
+  // Fetch selected group details to get members
+  const { data: selectedGroup } = useQuery({
+    queryKey: ["group", selectedGroupId],
+    queryFn: () => fetchGroupDetail(selectedGroupId!),
+    enabled: !!selectedGroupId && isOpen,
+  });
+
+  const groupMembers = useMemo(
+    () => selectedGroup?.members || [],
+    [selectedGroup?.members]
+  );
+
   // Initialize selected members when dialog opens
   useEffect(() => {
-    if (isOpen && selectedMembers.length === 0) {
+    if (isOpen && selectedMembers.length === 0 && groupMembers.length > 0) {
       setSelectedMembers(groupMembers.map((member) => member.userId));
     }
   }, [isOpen, groupMembers, selectedMembers.length]);

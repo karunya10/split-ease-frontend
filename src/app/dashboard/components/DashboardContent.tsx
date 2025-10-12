@@ -1,6 +1,13 @@
 "use client";
 
-import { GroupDetail, SettlementSummary, User } from "@/types/dashboard";
+import { useQuery } from "@tanstack/react-query";
+import { User, Group } from "@/types/dashboard";
+import { useDashboard } from "@/contexts/DashboardContext";
+import {
+  fetchGroupDetail,
+  fetchSettlementSummary,
+  fetchGroups,
+} from "@/hooks/useGroups";
 import GroupHeader from "./GroupHeader";
 import ExpensesList from "./ExpensesList";
 import BalanceSummary from "./BalanceSummary";
@@ -8,10 +15,7 @@ import SettlementsList from "./SettlementsList";
 import EmptyState from "./EmptyState";
 
 interface DashboardContentProps {
-  selectedGroup?: GroupDetail;
-  settlementSummary?: SettlementSummary;
   currentUser: User;
-  hasGroups: boolean;
   onAddExpense: () => void;
   onMarkAsPaid: (settlementId: string) => void;
   onViewMembers: () => void;
@@ -19,29 +23,44 @@ interface DashboardContentProps {
 }
 
 export default function DashboardContent({
-  selectedGroup,
-  settlementSummary,
   currentUser,
-  hasGroups,
   onAddExpense,
   onMarkAsPaid,
   onViewMembers,
   onDeleteGroup,
 }: DashboardContentProps) {
+  const { selectedGroupId } = useDashboard();
+
+  // Fetch user's groups for empty state check
+  const { data: groups = [] } = useQuery<Group[]>({
+    queryKey: ["groups"],
+    queryFn: fetchGroups,
+  });
+
+  // Fetch selected group details
+  const { data: selectedGroup } = useQuery({
+    queryKey: ["group", selectedGroupId],
+    queryFn: () => fetchGroupDetail(selectedGroupId!),
+    enabled: !!selectedGroupId,
+  });
+
+  // Fetch settlement summary for selected group
+  const { data: settlementSummary } = useQuery({
+    queryKey: ["settlement-summary", selectedGroupId],
+    queryFn: () => fetchSettlementSummary(selectedGroupId!),
+    enabled: !!selectedGroupId,
+  });
+
   // Get current user's role in the selected group
   const getCurrentUserRole = () => {
-    if (!selectedGroup || !currentUser) return "member";
-    const currentUserMembership = selectedGroup.members.find(
+    const currentUserMembership = selectedGroup?.members.find(
       (member) => member.userId === currentUser.id
     );
-    console.log("Debug - Current User ID:", currentUser.id);
-    console.log("Debug - Group Members:", selectedGroup.members);
-    console.log("Debug - Current User Membership:", currentUserMembership);
-    console.log("Debug - User Role:", currentUserMembership?.role || "member");
     return currentUserMembership?.role || "member";
   };
-  if (!selectedGroup) {
-    return <EmptyState hasGroups={hasGroups} />;
+
+  if (!selectedGroup || groups.length === 0) {
+    return <EmptyState />;
   }
 
   return (
@@ -67,9 +86,8 @@ export default function DashboardContent({
 
         {/* Balance & Settlements */}
         <div className="space-y-6">
-          <BalanceSummary settlementSummary={settlementSummary} />
+          <BalanceSummary />
           <SettlementsList
-            settlementSummary={settlementSummary}
             currentUser={currentUser}
             onMarkAsPaid={onMarkAsPaid}
           />

@@ -12,6 +12,9 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2, Search, UserPlus } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useDashboard } from "@/contexts/DashboardContext";
+import { fetchGroupDetail } from "@/hooks/useGroups";
 import { useUserSearch } from "@/hooks/useUserSearch";
 import { useDashboardMutations } from "@/hooks/useDashboardMutations";
 import { User } from "@/types/dashboard";
@@ -19,22 +22,27 @@ import { User } from "@/types/dashboard";
 interface AddMemberDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  groupId: string;
-  groupName: string;
   onMemberAdded: () => void;
 }
 
 export default function AddMemberDialog({
   isOpen,
   onClose,
-  groupId,
-  groupName,
   onMemberAdded,
 }: AddMemberDialogProps) {
+  const { selectedGroupId } = useDashboard();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
 
-  const { addMemberMutation } = useDashboardMutations(groupId);
+  // Fetch selected group details to get group name
+  const { data: selectedGroup } = useQuery({
+    queryKey: ["group", selectedGroupId],
+    queryFn: () => fetchGroupDetail(selectedGroupId!),
+    enabled: !!selectedGroupId && isOpen,
+  });
+
+  const groupName = selectedGroup?.name || "";
+  const { addMemberMutation } = useDashboardMutations(selectedGroupId);
   const userSearchMutation = useUserSearch();
 
   // Search for users

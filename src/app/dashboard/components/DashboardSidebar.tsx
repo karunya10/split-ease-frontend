@@ -1,123 +1,129 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Plus, Users, Loader2 } from "lucide-react";
-import { Group, SettlementSummary } from "@/types/dashboard";
-import {
-  getGroupAvatar,
-  getBalanceColor,
-  formatCurrency,
-} from "@/lib/dashboardUtils";
+import { Plus, Users } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useDashboard } from "@/contexts/DashboardContext";
+import { fetchGroups } from "@/hooks/useGroups";
+import { Group } from "@/types/dashboard";
+import { getGroupAvatar } from "@/lib/dashboardUtils";
 
 interface DashboardSidebarProps {
-  groups: Group[];
-  selectedGroupId: string | null;
-  onGroupSelect: (groupId: string) => void;
   onCreateGroup: () => void;
   onCreateExpense: () => void;
-  settlementSummary?: SettlementSummary;
   isCreatingGroup: boolean;
-  hasSelectedGroup: boolean;
 }
 
 export default function DashboardSidebar({
-  groups,
-  selectedGroupId,
-  onGroupSelect,
   onCreateGroup,
-  onCreateExpense,
-  settlementSummary,
   isCreatingGroup,
-  hasSelectedGroup,
 }: DashboardSidebarProps) {
-  return (
-    <div className="w-80 bg-gray-800 border-r border-gray-700 p-6">
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-300">Your groups</h2>
-          {groups.length === 0 && (
-            <Button
-              size="sm"
-              onClick={onCreateGroup}
-              className="bg-teal-600 hover:bg-teal-700"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
-          )}
-        </div>
+  const { selectedGroupId, setSelectedGroupId } = useDashboard();
 
-        {groups.length === 0 ? (
-          <div className="text-center py-8">
-            <Users className="w-12 h-12 mx-auto text-gray-500 mb-4" />
-            <p className="text-gray-400 mb-4">No groups yet</p>
-            <Button
-              onClick={onCreateGroup}
-              className="bg-teal-600 hover:bg-teal-700"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create your first group
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {groups.map((group) => {
-              const netBalance = settlementSummary?.netBalance || 0;
-              return (
-                <div
-                  key={group.id}
-                  onClick={() => onGroupSelect(group.id)}
-                  className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
-                    selectedGroupId === group.id
-                      ? "bg-gray-700"
-                      : "hover:bg-gray-700"
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-lg">
-                      {getGroupAvatar(group.name)}
-                    </div>
-                    <div>
-                      <span className="font-medium block">{group.name}</span>
-                      <span className="text-xs text-gray-400">
-                        {group.members.length} members • {group._count.expenses}{" "}
-                        expenses
-                      </span>
+  const { data: groups = [] } = useQuery<Group[]>({
+    queryKey: ["groups"],
+    queryFn: fetchGroups,
+  });
+
+  return (
+    <div className="w-80 bg-gradient-to-b from-gray-900 to-gray-800 relative">
+      <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-gray-600/50 to-transparent"></div>
+
+      <div className="p-6 h-full">
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-white mb-6 tracking-tight text-center">
+            Your Groups
+          </h2>
+          {groups.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 mx-auto mb-6 bg-gray-800/50 rounded-2xl flex items-center justify-center border border-gray-700/50">
+                <Users className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">
+                No groups yet
+              </h3>
+              <p className="text-gray-400 mb-6 text-sm leading-relaxed">
+                Start splitting expenses with friends and family
+              </p>
+              <Button
+                onClick={onCreateGroup}
+                className="bg-teal-600 hover:bg-teal-700 shadow-lg hover:shadow-teal-600/25 transition-all duration-200 font-medium px-6"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create your first group
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {groups.map((group) => {
+                const isSelected = selectedGroupId === group.id;
+                return (
+                  <div
+                    key={group.id}
+                    onClick={() => setSelectedGroupId(group.id)}
+                    className={`group relative p-4 rounded-xl cursor-pointer transition-all duration-200 ${
+                      isSelected
+                        ? "bg-teal-600/10 border border-teal-500/20 shadow-lg shadow-teal-600/5"
+                        : "hover:bg-gray-800/50 border border-transparent hover:border-gray-700/50"
+                    }`}
+                  >
+                    {isSelected && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-teal-600/5 to-transparent rounded-xl"></div>
+                    )}
+                    <div className="relative flex items-center space-x-4">
+                      <div
+                        className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-semibold transition-all duration-200 ${
+                          isSelected
+                            ? "bg-teal-600 text-white shadow-lg shadow-teal-600/25"
+                            : "bg-gray-700 text-gray-300 group-hover:bg-gray-600"
+                        }`}
+                      >
+                        {getGroupAvatar(group.name)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3
+                          className={`font-semibold truncate transition-colors duration-200 ${
+                            isSelected
+                              ? "text-white"
+                              : "text-gray-200 group-hover:text-white"
+                          }`}
+                        >
+                          {group.name}
+                        </h3>
+                        <p
+                          className={`text-sm transition-colors duration-200 ${
+                            isSelected
+                              ? "text-teal-200"
+                              : "text-gray-400 group-hover:text-gray-300"
+                          }`}
+                        >
+                          {group.members.length} members
+                        </p>
+                      </div>
+                      {isSelected && (
+                        <div className="w-2 h-2 bg-teal-400 rounded-full animate-pulse"></div>
+                      )}
                     </div>
                   </div>
-                  {selectedGroupId === group.id && (
-                    <span
-                      className={`font-semibold text-sm ${getBalanceColor(
-                        netBalance
-                      )}`}
-                    >
-                      {Math.abs(netBalance) > 0
-                        ? formatCurrency(Math.abs(netBalance))
-                        : "$0"}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
 
-        {groups.length > 0 && (
-          <Button
-            onClick={onCreateGroup}
-            className="w-full mt-4 bg-gray-700 hover:bg-gray-600 text-white"
-            disabled={isCreatingGroup}
-          >
-            {isCreatingGroup ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <Plus className="w-4 h-4 mr-2" />
-            )}
-            New Group
-          </Button>
-        )}
+          {groups.length > 0 && (
+            <div className="mt-8 pt-6 border-t border-gray-700/50">
+              <Button
+                onClick={onCreateGroup}
+                className="w-full bg-gray-800/50 hover:bg-gray-700/80 text-gray-300 hover:text-white border border-gray-700/50 hover:border-gray-600 font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                disabled={isCreatingGroup}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Group
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
-
-   
     </div>
   );
 }

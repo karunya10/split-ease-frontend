@@ -8,17 +8,23 @@ import {
   DialogContent,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Users, Crown, Shield, User as UserIcon, UserPlus } from "lucide-react";
-import { GroupMember } from "@/types/dashboard";
+import {
+  Users,
+  Crown,
+  Shield,
+  User as UserIcon,
+  UserPlus,
+  Loader2,
+} from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
+import { useDashboard } from "@/contexts/DashboardContext";
+import { fetchGroupDetail } from "@/hooks/useGroups";
 
 interface GroupMembersDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  members: GroupMember[];
-  groupName: string;
-  groupId: string;
   onAddMember: () => void;
-  currentUserRole?: string;
 }
 
 const getRoleIcon = (role: string) => {
@@ -57,12 +63,31 @@ const getRoleBadgeClass = (role: string) => {
 export default function GroupMembersDialog({
   isOpen,
   onClose,
-  members,
-  groupName,
-  groupId,
   onAddMember,
-  currentUserRole = "member",
 }: GroupMembersDialogProps) {
+  const { user } = useAuth();
+  const { selectedGroupId } = useDashboard();
+
+  // Fetch selected group details to get members
+  const { data: selectedGroup, isLoading } = useQuery({
+    queryKey: ["group", selectedGroupId],
+    queryFn: () => fetchGroupDetail(selectedGroupId!),
+    enabled: !!selectedGroupId && isOpen,
+  });
+
+  // Get current user's role in the selected group
+  const getCurrentUserRole = () => {
+    if (!selectedGroup || !user) return "member";
+    const currentUserMembership = selectedGroup.members.find(
+      (member) => member.userId === user.id
+    );
+    return currentUserMembership?.role || "member";
+  };
+
+  const members = selectedGroup?.members || [];
+  const groupName = selectedGroup?.name || "";
+  const currentUserRole = getCurrentUserRole();
+
   return (
     <Dialog isOpen={isOpen} onClose={onClose} className="max-w-md">
       <DialogHeader>
@@ -72,50 +97,60 @@ export default function GroupMembersDialog({
         </DialogTitle>
       </DialogHeader>
       <DialogContent>
-        <div className="space-y-3">
-          {members.length === 0 ? (
-            <p className="text-gray-400 text-center py-4">No members found</p>
-          ) : (
-            members.map((member) => (
-              <div
-                key={member.id}
-                className="flex items-center justify-between p-3 bg-gray-700 rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-white">
-                      {(member.user.name || member.user.email)
-                        .charAt(0)
-                        .toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="font-medium text-white">
-                      {member.user.name || member.user.email}
-                    </div>
-                    {member.user.name && (
-                      <div className="text-sm text-gray-400">
-                        {member.user.email}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div
-                  className={`flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-medium ${getRoleBadgeClass(
-                    member.role
-                  )}`}
-                >
-                  {getRoleIcon(member.role)}
-                  {getRoleText(member.role)}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-        {members.length > 0 && (
-          <div className="mt-4 text-sm text-gray-400 text-center">
-            {members.length} member{members.length !== 1 ? "s" : ""} total
+        {isLoading ? (
+          <div className="text-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-400" />
           </div>
+        ) : (
+          <>
+            <div className="space-y-3">
+              {members.length === 0 ? (
+                <p className="text-gray-400 text-center py-4">
+                  No members found
+                </p>
+              ) : (
+                members.map((member) => (
+                  <div
+                    key={member.id}
+                    className="flex items-center justify-between p-3 bg-gray-700 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-white">
+                          {(member.user.name || member.user.email)
+                            .charAt(0)
+                            .toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <div className="font-medium text-white">
+                          {member.user.name || member.user.email}
+                        </div>
+                        {member.user.name && (
+                          <div className="text-sm text-gray-400">
+                            {member.user.email}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div
+                      className={`flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-medium ${getRoleBadgeClass(
+                        member.role
+                      )}`}
+                    >
+                      {getRoleIcon(member.role)}
+                      {getRoleText(member.role)}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            {members.length > 0 && (
+              <div className="mt-4 text-sm text-gray-400 text-center">
+                {members.length} member{members.length !== 1 ? "s" : ""} total
+              </div>
+            )}
+          </>
         )}
       </DialogContent>
       <DialogFooter>

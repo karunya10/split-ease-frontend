@@ -2,16 +2,21 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Loader2 } from "lucide-react";
-import { SettlementSummary } from "@/types/dashboard";
+import { useQuery } from "@tanstack/react-query";
+import { useDashboard } from "@/contexts/DashboardContext";
+import { fetchSettlementSummary } from "@/hooks/useGroups";
 import { formatCurrency, getBalanceColor } from "@/lib/dashboardUtils";
 
-interface BalanceSummaryProps {
-  settlementSummary?: SettlementSummary;
-}
+export default function BalanceSummary() {
+  const { selectedGroupId } = useDashboard();
 
-export default function BalanceSummary({
-  settlementSummary,
-}: BalanceSummaryProps) {
+  // Fetch settlement summary for selected group
+  const { data: settlementSummary } = useQuery({
+    queryKey: ["settlement-summary", selectedGroupId],
+    queryFn: () => fetchSettlementSummary(selectedGroupId!),
+    enabled: !!selectedGroupId,
+  });
+
   return (
     <Card className="bg-gray-800 border-gray-700">
       <CardHeader>

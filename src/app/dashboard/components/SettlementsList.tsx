@@ -3,20 +3,30 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, CheckCircle } from "lucide-react";
-import { SettlementSummary, User } from "@/types/dashboard";
+import { useQuery } from "@tanstack/react-query";
+import { useDashboard } from "@/contexts/DashboardContext";
+import { fetchSettlementSummary } from "@/hooks/useGroups";
+import { User } from "@/types/dashboard";
 import { formatCurrency } from "@/lib/dashboardUtils";
 
 interface SettlementsListProps {
-  settlementSummary?: SettlementSummary;
   currentUser: User;
   onMarkAsPaid: (settlementId: string) => void;
 }
 
 export default function SettlementsList({
-  settlementSummary,
   currentUser,
   onMarkAsPaid,
 }: SettlementsListProps) {
+  const { selectedGroupId } = useDashboard();
+
+  // Fetch settlement summary for selected group
+  const { data: settlementSummary } = useQuery({
+    queryKey: ["settlement-summary", selectedGroupId],
+    queryFn: () => fetchSettlementSummary(selectedGroupId!),
+    enabled: !!selectedGroupId,
+  });
+
   return (
     <Card className="bg-gray-800 border-gray-700">
       <CardHeader>

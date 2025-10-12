@@ -54,7 +54,7 @@ export function useAuth(): UseAuthReturn {
   const verify = async () => {
     try {
       const { data: authData } = await api.get("/auth/verify");
-      setUser(authData.decoded);
+      setUser(authData.user);
     } catch (error) {
       console.log(error);
     }

@@ -1,13 +1,15 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { DashboardProvider, useDashboard } from "@/contexts/DashboardContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { AlertCircle, Loader2 } from "lucide-react";
-import { useDashboardData } from "@/hooks/useDashboardData";
 import { useDashboardMutations } from "@/hooks/useDashboardMutations";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { fetchGroups } from "@/hooks/useGroups";
+import { Group } from "@/types/dashboard";
 
 import DashboardSidebar from "./components/DashboardSidebar";
 import DashboardContent from "./components/DashboardContent";
@@ -17,9 +19,24 @@ import GroupMembersDialog from "./components/GroupMembersDialog";
 import AddMemberDialog from "./components/AddMemberDialog";
 import DeleteGroupDialog from "./components/DeleteGroupDialog";
 
-export default function Dashboard() {
-  const { user, logout, isLoading } = useAuth();
-  const router = useRouter();
+function DashboardInner() {
+  const { user, logout } = useAuth();
+  const { selectedGroupId, setSelectedGroupId } = useDashboard();
+
+  // Fetch user's groups
+  const { data: groups = [], error: groupsError } = useQuery<Group[]>({
+    queryKey: ["groups"],
+    queryFn: fetchGroups,
+    enabled: !!user,
+  });
+
+  // Set first group as selected when groups load
+  useEffect(() => {
+    if (groups.length > 0 && !selectedGroupId) {
+      setSelectedGroupId(groups[0].id);
+    }
+  }, [groups, selectedGroupId, setSelectedGroupId]);
+
   const queryClient = useQueryClient();
   const [showCreateGroupForm, setShowCreateGroupForm] = useState(false);
   const [showCreateExpenseForm, setShowCreateExpenseForm] = useState(false);
@@ -34,27 +51,11 @@ export default function Dashboard() {
   });
 
   const {
-    groups,
-    selectedGroup,
-    settlementSummary,
-    selectedGroupId,
-    setSelectedGroupId,
-    groupsError,
-  } = useDashboardData(user?.id);
-
-  const {
     createGroupMutation,
     createExpenseMutation,
     markPaidMutation,
     deleteGroupMutation,
   } = useDashboardMutations(selectedGroupId);
-
-  // Redirect unauthenticated users to home
-  useEffect(() => {
-    if (!user && !isLoading) {
-      router.push("/");
-    }
-  }, [user, isLoading, router]);
 
   // Handlers
   const handleCreateGroup = async (name: string) => {
@@ -71,25 +72,17 @@ export default function Dashboard() {
   };
 
   const handleCreateExpense = () => {
-    if (selectedGroup && newExpense.description && newExpense.amount) {
+    // We need to get selected group data for this operation
+    // This will be handled by fetching the group data in this component or the dialog
+    if (selectedGroupId && newExpense.description && newExpense.amount) {
       const amount = parseFloat(newExpense.amount);
       if (amount > 0) {
-        // Default to equal split among all members if no custom splits
-        let splits = newExpense.splits;
-        if (splits.length === 0) {
-          const amountPerPerson = amount / selectedGroup.members.length;
-          splits = selectedGroup.members.map((member) => ({
-            userId: member.userId,
-            amountOwed: amountPerPerson,
-          }));
-        }
-
         createExpenseMutation.mutate(
           {
-            groupId: selectedGroup.id,
+            groupId: selectedGroupId,
             description: newExpense.description,
             amount,
-            splits,
+            splits: newExpense.splits,
           },
           {
             onSuccess: () => {
@@ -122,48 +115,33 @@ export default function Dashboard() {
   };
 
   const handleDeleteGroup = () => {
-    if (selectedGroup) {
-      deleteGroupMutation.mutate(selectedGroup.id, {
+    if (selectedGroupId) {
+      const deletedGroupId = selectedGroupId;
+      deleteGroupMutation.mutate(selectedGroupId, {
         onSuccess: () => {
           setShowDeleteGroup(false);
-          // Clear selected group and redirect to first available group or empty state
-          const remainingGroups = groups.filter(
-            (g) => g.id !== selectedGroup.id
-          );
-          if (remainingGroups.length > 0) {
-            setSelectedGroupId(remainingGroups[0].id);
-          } else {
-            setSelectedGroupId(null);
-          }
+
+          // Clear selected group immediately
+          setSelectedGroupId(null);
+
+          // The groups query will be invalidated by the mutation,
+          // but we can also optimistically update the local state
+          queryClient.setQueryData<Group[]>(["groups"], (oldGroups = []) => {
+            return oldGroups.filter((g) => g.id !== deletedGroupId);
+          });
+
+          // After optimistic update, select first remaining group if any
+          setTimeout(() => {
+            const updatedGroups =
+              queryClient.getQueryData<Group[]>(["groups"]) || [];
+            if (updatedGroups.length > 0) {
+              setSelectedGroupId(updatedGroups[0].id);
+            }
+          }, 100);
         },
       });
     }
   };
-
-  // Get current user's role in the selected group
-  const getCurrentUserRole = () => {
-    if (!selectedGroup || !user) return "member";
-    const currentUserMembership = selectedGroup.members.find(
-      (member) => member.userId === user.id
-    );
-    return currentUserMembership?.role || "member";
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-white" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white">Redirecting...</div>
-      </div>
-    );
-  }
 
   if (groupsError) {
     return (
@@ -178,26 +156,18 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <Header isAuthenticated={user ? true : false} onLogout={logout} />
+      <Header isAuthenticated={!!user} onLogout={logout} />
 
-      <div className="flex h-screen pt-16">
+      <div className="flex h-screen">
         <DashboardSidebar
-          groups={groups}
-          selectedGroupId={selectedGroupId}
-          onGroupSelect={setSelectedGroupId}
           onCreateGroup={() => setShowCreateGroupForm(true)}
           onCreateExpense={() => setShowCreateExpenseForm(true)}
-          settlementSummary={settlementSummary}
           isCreatingGroup={createGroupMutation.isPending}
-          hasSelectedGroup={!!selectedGroup}
         />
 
-        <div className="flex-1 p-6 overflow-y-auto">
+        <div className="flex-1 p-8 overflow-y-auto bg-gray-900">
           <DashboardContent
-            selectedGroup={selectedGroup}
-            settlementSummary={settlementSummary}
-            currentUser={user}
-            hasGroups={groups.length > 0}
+            currentUser={user!}
             onAddExpense={() => setShowCreateExpenseForm(true)}
             onMarkAsPaid={(settlementId) =>
               markPaidMutation.mutate(settlementId)
@@ -224,38 +194,63 @@ export default function Dashboard() {
         onExpenseChange={setNewExpense}
         onSubmit={handleCreateExpense}
         isCreating={createExpenseMutation.isPending}
-        groupMembers={selectedGroup?.members || []}
       />
 
       <GroupMembersDialog
         isOpen={showGroupMembers}
         onClose={() => setShowGroupMembers(false)}
-        members={selectedGroup?.members || []}
-        groupName={selectedGroup?.name || ""}
-        groupId={selectedGroup?.id || ""}
         onAddMember={() => {
           setShowGroupMembers(false);
           setShowAddMember(true);
         }}
-        currentUserRole={getCurrentUserRole()}
       />
 
       <AddMemberDialog
         isOpen={showAddMember}
         onClose={() => setShowAddMember(false)}
-        groupId={selectedGroup?.id || ""}
-        groupName={selectedGroup?.name || ""}
         onMemberAdded={handleMemberAdded}
       />
 
       <DeleteGroupDialog
         isOpen={showDeleteGroup}
         onClose={() => setShowDeleteGroup(false)}
-        groupName={selectedGroup?.name || ""}
-        groupId={selectedGroup?.id || ""}
         onConfirm={handleDeleteGroup}
         isDeleting={deleteGroupMutation.isPending}
       />
     </div>
+  );
+}
+
+export default function Dashboard() {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  // Redirect unauthenticated users to home
+  useEffect(() => {
+    if (!user && !isLoading) {
+      router.push("/");
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-white" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-white">Redirecting...</div>
+      </div>
+    );
+  }
+
+  return (
+    <DashboardProvider>
+      <DashboardInner />
+    </DashboardProvider>
   );
 }

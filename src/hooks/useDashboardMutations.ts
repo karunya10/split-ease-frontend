@@ -80,8 +80,16 @@ export function useDashboardMutations(selectedGroupId: string | null) {
   // Delete group mutation
   const deleteGroupMutation = useMutation({
     mutationFn: deleteGroup,
-    onSuccess: () => {
+    onSuccess: (_, deletedGroupId) => {
+      // Invalidate groups list
       queryClient.invalidateQueries({ queryKey: ["groups"] });
+
+      // Remove the specific group from cache
+      queryClient.removeQueries({ queryKey: ["group", deletedGroupId] });
+      queryClient.removeQueries({
+        queryKey: ["settlement-summary", deletedGroupId],
+      });
+
       toast.success("Group deleted!", {
         description: "The group has been deleted successfully.",
       });
