@@ -66,10 +66,12 @@ splitease-frontend/
 │   ├── contexts/             # React contexts
 │   │   └── AuthContext.tsx   # Authentication context and provider
 │   ├── hooks/                # Custom hooks
-│   │   └── useDashboard.ts   # Dashboard data and mutations
+│   │   ├── useAuth.ts        # Authentication hook
+│   │   ├── useDashboardData.ts # Dashboard data fetching hook
+│   │   ├── useDashboardMutations.ts # Dashboard mutation hooks
+│   │   └── useGroups.ts      # API functions for groups and operations
 │   ├── lib/                  # Utility libraries
 │   │   ├── api.ts            # Configured Axios instance
-│   │   ├── dashboardApi.ts   # API functions for dashboard
 │   │   ├── dashboardUtils.ts # Dashboard utility functions
 │   │   └── utils.ts          # General utilities
 │   └── types/                # TypeScript type definitions
@@ -125,9 +127,9 @@ splitease-frontend/
 ### Data Management
 
 1. **React Query**: Handles server state, caching, and synchronization
-2. **Custom Hooks**: Abstracts data fetching logic (`useDashboard.ts`)
-3. **API Layer**: Centralized API functions (`dashboardApi.ts`)
-4. **Type Safety**: Full TypeScript coverage for data models
+2. **Custom Hooks**: Modular hooks for different concerns (`useDashboardData`, `useDashboardMutations`, `useGroups`)
+3. **Type Safety**: Full TypeScript coverage for data models
+4. **Modular Architecture**: Clean separation of concerns with dedicated hooks layer (`useGroups.ts`)
 
 ### Component Structure
 

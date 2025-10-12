@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Plus, Users, DollarSign, Loader2 } from "lucide-react";
+import { Plus, Users, Loader2 } from "lucide-react";
 import { Group, SettlementSummary } from "@/types/dashboard";
 import {
   getGroupAvatar,
@@ -117,27 +117,7 @@ export default function DashboardSidebar({
         )}
       </div>
 
-      <div>
-        <h3 className="text-lg font-semibold text-gray-300 mb-4">Shortcuts</h3>
-        <div className="space-y-2">
-          <Button
-            onClick={onCreateExpense}
-            disabled={!hasSelectedGroup}
-            variant="ghost"
-            className="w-full justify-start text-gray-300 hover:bg-gray-700 disabled:opacity-50"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add expense
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-gray-300 hover:bg-gray-700"
-          >
-            <DollarSign className="w-4 h-4 mr-2" />
-            View all settlements
-          </Button>
-        </div>
-      </div>
+   
     </div>
   );
 }

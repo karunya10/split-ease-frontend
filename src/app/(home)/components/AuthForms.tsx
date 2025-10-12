@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { User, Mail, Lock } from "lucide-react";
 
 interface AuthFormsProps {
   onSignup: (email: string, password: string, name: string) => Promise<void>;
@@ -43,7 +44,10 @@ export default function AuthForms({ onSignup, onLogin }: AuthFormsProps) {
 
           <div className="space-y-4">
             <div>
-              <Label className="text-gray-300 mb-2 block">👤 Full name</Label>
+              <Label className="text-gray-300 mb-2 flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Full name
+              </Label>
               <Input
                 value={signupForm.name}
                 onChange={(e) =>
@@ -55,8 +59,9 @@ export default function AuthForms({ onSignup, onLogin }: AuthFormsProps) {
             </div>
 
             <div>
-              <Label className="text-gray-300 mb-2 block">
-                📧 Email address
+              <Label className="text-gray-300 mb-2 flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                Email address
               </Label>
               <Input
                 type="email"
@@ -70,8 +75,9 @@ export default function AuthForms({ onSignup, onLogin }: AuthFormsProps) {
             </div>
 
             <div>
-              <Label className="text-gray-300 mb-2 block">
-                🔒 Create password
+              <Label className="text-gray-300 mb-2 flex items-center gap-2">
+                <Lock className="w-4 h-4" />
+                Create password
               </Label>
               <Input
                 type="password"
@@ -90,11 +96,6 @@ export default function AuthForms({ onSignup, onLogin }: AuthFormsProps) {
             >
               Create account
             </Button>
-
-            <p className="text-center text-gray-400 text-sm">
-              Already have an account?{" "}
-              <button className="text-teal-400 hover:underline">Log in</button>
-            </p>
           </div>
         </div>
 
@@ -106,8 +107,9 @@ export default function AuthForms({ onSignup, onLogin }: AuthFormsProps) {
 
           <div className="space-y-4">
             <div>
-              <Label className="text-gray-300 mb-2 block">
-                📧 Email address
+              <Label className="text-gray-300 mb-2 flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                Email address
               </Label>
               <Input
                 type="email"
@@ -121,7 +123,10 @@ export default function AuthForms({ onSignup, onLogin }: AuthFormsProps) {
             </div>
 
             <div>
-              <Label className="text-gray-300 mb-2 block">🔒 Password</Label>
+              <Label className="text-gray-300 mb-2 flex items-center gap-2">
+                <Lock className="w-4 h-4" />
+                Password
+              </Label>
               <Input
                 type="password"
                 value={loginForm.password}
@@ -139,12 +144,6 @@ export default function AuthForms({ onSignup, onLogin }: AuthFormsProps) {
             >
               Log in
             </Button>
-
-            <div className="text-center">
-              <button className="text-teal-400 hover:underline text-sm">
-                Forgot password?
-              </button>
-            </div>
           </div>
         </div>
       </div>

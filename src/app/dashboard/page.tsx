@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import { AlertCircle, Loader2 } from "lucide-react";
-import { useDashboardData, useDashboardMutations } from "@/hooks/useDashboard";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { useDashboardMutations } from "@/hooks/useDashboardMutations";
 import { useQueryClient } from "@tanstack/react-query";
 
 import DashboardSidebar from "./components/DashboardSidebar";
@@ -32,7 +33,6 @@ export default function Dashboard() {
     splits: [] as { userId: string; amountOwed: number }[],
   });
 
-  // Use dashboard hooks
   const {
     groups,
     selectedGroup,
@@ -178,7 +178,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <Header isAuthenticated={true} onLogout={logout} />
+      <Header isAuthenticated={user ? true : false} onLogout={logout} />
 
       <div className="flex h-screen pt-16">
         <DashboardSidebar

@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2, Search, UserPlus } from "lucide-react";
 import { useState, useEffect } from "react";
-import { groupsApi } from "@/lib/dashboardApi";
+import { useUserSearch } from "@/hooks/useUserSearch";
+import { useDashboardMutations } from "@/hooks/useDashboardMutations";
 import { User } from "@/types/dashboard";
 
 interface AddMemberDialogProps {
@@ -32,8 +33,9 @@ export default function AddMemberDialog({
 }: AddMemberDialogProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
+
+  const { addMemberMutation } = useDashboardMutations(groupId);
+  const userSearchMutation = useUserSearch();
 
   // Search for users
   useEffect(() => {
@@ -43,34 +45,28 @@ export default function AddMemberDialog({
         return;
       }
 
-      setIsSearching(true);
       try {
-        const results = await groupsApi.searchUsers(searchQuery);
+        const results = await userSearchMutation.mutateAsync(searchQuery);
         setSearchResults(results);
       } catch (error) {
         console.error("Error searching users:", error);
         setSearchResults([]);
-      } finally {
-        setIsSearching(false);
       }
     };
 
     const debounceTimer = setTimeout(searchUsers, 300);
     return () => clearTimeout(debounceTimer);
-  }, [searchQuery]);
+  }, [searchQuery, userSearchMutation]);
 
   const handleAddMember = async (user: User) => {
-    setIsAdding(true);
     try {
-      await groupsApi.addGroupMember(groupId, user.id);
+      await addMemberMutation.mutateAsync({ userId: user.id });
       onMemberAdded();
       setSearchQuery("");
       setSearchResults([]);
       onClose();
     } catch (error) {
       console.error("Error adding member:", error);
-    } finally {
-      setIsAdding(false);
     }
   };
 
@@ -104,7 +100,7 @@ export default function AddMemberDialog({
                 className="pl-10 bg-gray-600 border-gray-500 text-white"
                 autoFocus
               />
-              {isSearching && (
+              {userSearchMutation.isPending && (
                 <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-gray-400" />
               )}
             </div>
@@ -116,7 +112,7 @@ export default function AddMemberDialog({
                   <button
                     key={user.id}
                     onClick={() => handleAddMember(user)}
-                    disabled={isAdding}
+                    disabled={addMemberMutation.isPending}
                     className="w-full text-left px-3 py-3 hover:bg-gray-600 text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between"
                   >
                     <div>
@@ -129,7 +125,7 @@ export default function AddMemberDialog({
                         </div>
                       )}
                     </div>
-                    {isAdding ? (
+                    {addMemberMutation.isPending ? (
                       <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
                     ) : (
                       <UserPlus className="w-4 h-4 text-gray-400" />
@@ -142,7 +138,7 @@ export default function AddMemberDialog({
             {/* No results found */}
             {searchQuery.trim().length >= 2 &&
               searchResults.length === 0 &&
-              !isSearching && (
+              !userSearchMutation.isPending && (
                 <div className="mt-2 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-400 text-sm">
                   No users found matching &quot;{searchQuery}&quot;
                 </div>

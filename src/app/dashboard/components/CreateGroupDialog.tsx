@@ -33,12 +33,6 @@ export default function CreateGroupDialog({
     onSubmit(groupName);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && groupName.trim() && !isCreating) {
-      handleSubmit();
-    }
-  };
-
   return (
     <Dialog isOpen={isOpen} onClose={onClose} className="max-w-md">
       <DialogHeader>
@@ -56,7 +50,6 @@ export default function CreateGroupDialog({
               onChange={(e) => onGroupNameChange(e.target.value)}
               placeholder="Enter group name"
               className="mt-2 bg-gray-600 border-gray-500 text-white"
-              onKeyDown={handleKeyDown}
               autoFocus
             />
           </div>
