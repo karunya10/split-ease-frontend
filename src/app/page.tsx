@@ -9,23 +9,13 @@ import FeatureGrid from "./(home)/components/FeatureGrid";
 import AuthForms from "./(home)/components/AuthForms";
 
 export default function Home() {
-  const {
-    user,
-    login,
-    signup,
-    isLoading,
-    isLoginLoading,
-    isSignupLoading,
-    loginError,
-    signupError,
-  } = useAuth();
+  const { user, login, signup, isLoading } = useAuth();
 
   const router = useRouter();
 
-  // Redirect authenticated users to dashboard
   useEffect(() => {
     if (user && !isLoading) {
-      router.push("/dashboard"); // Change this to your desired route
+      router.push("/dashboard");
     }
   }, [user, isLoading, router]);
 
@@ -57,10 +47,7 @@ export default function Home() {
         <AuthForms
           onSignup={signup}
           onLogin={login}
-          isLoginLoading={isLoginLoading}
-          isSignupLoading={isSignupLoading}
-          loginError={loginError}
-          signupError={signupError}
+         
         />
       </div>
     </div>

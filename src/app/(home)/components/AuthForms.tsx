@@ -6,20 +6,9 @@ import { Button } from "@/components/ui/button";
 interface AuthFormsProps {
   onSignup: (email: string, password: string, name: string) => Promise<void>;
   onLogin: (email: string, password: string) => Promise<void>;
-  isLoginLoading: boolean;
-  isSignupLoading: boolean;
-  loginError: string | null;
-  signupError: string | null;
 }
 
-export default function AuthForms({
-  onSignup,
-  onLogin,
-  isLoginLoading,
-  isSignupLoading,
-  loginError,
-  signupError,
-}: AuthFormsProps) {
+export default function AuthForms({ onSignup, onLogin }: AuthFormsProps) {
   const [signupForm, setSignupForm] = useState({
     name: "",
     email: "",
@@ -51,12 +40,6 @@ export default function AuthForms({
           <h2 className="text-2xl font-semibold mb-6 text-center">
             Get started — Sign up
           </h2>
-
-          {signupError && (
-            <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-2 rounded mb-4">
-              {signupError}
-            </div>
-          )}
 
           <div className="space-y-4">
             <div>
@@ -103,12 +86,9 @@ export default function AuthForms({
 
             <Button
               onClick={handleSignup}
-              disabled={
-                isSignupLoading || !signupForm.email || !signupForm.password
-              }
               className="w-full bg-teal-400 text-slate-900 hover:bg-teal-500 font-semibold py-3"
             >
-              {isSignupLoading ? "Creating account..." : "Create account"}
+              Create account
             </Button>
 
             <p className="text-center text-gray-400 text-sm">
@@ -123,12 +103,6 @@ export default function AuthForms({
           <h2 className="text-2xl font-semibold mb-6 text-center">
             Quick login
           </h2>
-
-          {loginError && (
-            <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-2 rounded mb-4">
-              {loginError}
-            </div>
-          )}
 
           <div className="space-y-4">
             <div>
@@ -161,12 +135,9 @@ export default function AuthForms({
 
             <Button
               onClick={handleLogin}
-              disabled={
-                isLoginLoading || !loginForm.email || !loginForm.password
-              }
               className="w-full bg-teal-400 text-slate-900 hover:bg-teal-500 font-semibold py-3"
             >
-              {isLoginLoading ? "Signing in..." : "Log in"}
+              Log in
             </Button>
 
             <div className="text-center">
