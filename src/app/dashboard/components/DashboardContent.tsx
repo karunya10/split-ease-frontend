@@ -16,20 +16,19 @@ import EmptyState from "./EmptyState";
 
 interface DashboardContentProps {
   currentUser: User;
-  onAddExpense: () => void;
   onMarkAsPaid: (settlementId: string) => void;
-  onViewMembers: () => void;
-  onDeleteGroup: () => void;
 }
 
 export default function DashboardContent({
   currentUser,
-  onAddExpense,
   onMarkAsPaid,
-  onViewMembers,
-  onDeleteGroup,
 }: DashboardContentProps) {
-  const { selectedGroupId } = useDashboard();
+  const {
+    selectedGroupId,
+    setShowCreateExpenseForm,
+    setShowGroupMembers,
+    setShowDeleteGroup,
+  } = useDashboard();
 
   // Fetch user's groups for empty state check
   const { data: groups = [] } = useQuery<Group[]>({
@@ -68,9 +67,9 @@ export default function DashboardContent({
       <GroupHeader
         group={selectedGroup}
         settlementSummary={settlementSummary}
-        onAddExpense={onAddExpense}
-        onViewMembers={onViewMembers}
-        onDeleteGroup={onDeleteGroup}
+        onAddExpense={() => setShowCreateExpenseForm(true)}
+        onViewMembers={() => setShowGroupMembers(true)}
+        onDeleteGroup={() => setShowDeleteGroup(true)}
         currentUserRole={getCurrentUserRole()}
       />
 
@@ -80,7 +79,7 @@ export default function DashboardContent({
           <ExpensesList
             expenses={selectedGroup.expenses}
             currentUser={currentUser}
-            onAddExpense={onAddExpense}
+            onAddExpense={() => setShowCreateExpenseForm(true)}
           />
         </div>
 

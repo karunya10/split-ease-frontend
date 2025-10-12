@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { DashboardProvider, useDashboard } from "@/contexts/DashboardContext";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Header from "@/components/Header";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useDashboardMutations } from "@/hooks/useDashboardMutations";
@@ -21,7 +21,19 @@ import DeleteGroupDialog from "./components/DeleteGroupDialog";
 
 function DashboardInner() {
   const { user, logout } = useAuth();
-  const { selectedGroupId, setSelectedGroupId } = useDashboard();
+  const {
+    selectedGroupId,
+    setSelectedGroupId,
+    setShowCreateGroupForm,
+    setShowCreateExpenseForm,
+    showAddMember,
+    setShowAddMember,
+    setShowDeleteGroup,
+    newGroupName,
+    newExpense,
+    resetNewGroupForm,
+    resetNewExpenseForm,
+  } = useDashboard();
 
   // Fetch user's groups
   const { data: groups = [], error: groupsError } = useQuery<Group[]>({
@@ -38,17 +50,6 @@ function DashboardInner() {
   }, [groups, selectedGroupId, setSelectedGroupId]);
 
   const queryClient = useQueryClient();
-  const [showCreateGroupForm, setShowCreateGroupForm] = useState(false);
-  const [showCreateExpenseForm, setShowCreateExpenseForm] = useState(false);
-  const [showGroupMembers, setShowGroupMembers] = useState(false);
-  const [showAddMember, setShowAddMember] = useState(false);
-  const [showDeleteGroup, setShowDeleteGroup] = useState(false);
-  const [newGroupName, setNewGroupName] = useState("");
-  const [newExpense, setNewExpense] = useState({
-    description: "",
-    amount: "",
-    splits: [] as { userId: string; amountOwed: number }[],
-  });
 
   const {
     createGroupMutation,
@@ -58,13 +59,15 @@ function DashboardInner() {
   } = useDashboardMutations(selectedGroupId);
 
   // Handlers
-  const handleCreateGroup = async (name: string) => {
-    if (name.trim()) {
+  const handleCreateGroup = async () => {
+    if (newGroupName.trim()) {
       try {
-        const newGroup = await createGroupMutation.mutateAsync(name.trim());
+        const newGroup = await createGroupMutation.mutateAsync(
+          newGroupName.trim()
+        );
         setSelectedGroupId(newGroup.id);
         setShowCreateGroupForm(false);
-        setNewGroupName("");
+        resetNewGroupForm();
       } catch (error) {
         console.error("Failed to create group:", error);
       }
@@ -87,22 +90,12 @@ function DashboardInner() {
           {
             onSuccess: () => {
               setShowCreateExpenseForm(false);
-              setNewExpense({ description: "", amount: "", splits: [] });
+              resetNewExpenseForm();
             },
           }
         );
       }
     }
-  };
-
-  const handleCloseCreateGroupDialog = () => {
-    setShowCreateGroupForm(false);
-    setNewGroupName("");
-  };
-
-  const handleCloseCreateExpenseDialog = () => {
-    setShowCreateExpenseForm(false);
-    setNewExpense({ description: "", amount: "", splits: [] });
   };
 
   const handleMemberAdded = () => {
@@ -159,51 +152,29 @@ function DashboardInner() {
       <Header isAuthenticated={!!user} onLogout={logout} />
 
       <div className="flex h-screen">
-        <DashboardSidebar
-          onCreateGroup={() => setShowCreateGroupForm(true)}
-          onCreateExpense={() => setShowCreateExpenseForm(true)}
-          isCreatingGroup={createGroupMutation.isPending}
-        />
+        <DashboardSidebar isCreatingGroup={createGroupMutation.isPending} />
 
         <div className="flex-1 p-8 overflow-y-auto bg-gray-900">
           <DashboardContent
             currentUser={user!}
-            onAddExpense={() => setShowCreateExpenseForm(true)}
             onMarkAsPaid={(settlementId) =>
               markPaidMutation.mutate(settlementId)
             }
-            onViewMembers={() => setShowGroupMembers(true)}
-            onDeleteGroup={() => setShowDeleteGroup(true)}
           />
         </div>
       </div>
 
       <CreateGroupDialog
-        isOpen={showCreateGroupForm}
-        onClose={handleCloseCreateGroupDialog}
-        groupName={newGroupName}
-        onGroupNameChange={setNewGroupName}
         onSubmit={handleCreateGroup}
         isCreating={createGroupMutation.isPending}
       />
 
       <CreateExpenseDialog
-        isOpen={showCreateExpenseForm}
-        onClose={handleCloseCreateExpenseDialog}
-        expense={newExpense}
-        onExpenseChange={setNewExpense}
         onSubmit={handleCreateExpense}
         isCreating={createExpenseMutation.isPending}
       />
 
-      <GroupMembersDialog
-        isOpen={showGroupMembers}
-        onClose={() => setShowGroupMembers(false)}
-        onAddMember={() => {
-          setShowGroupMembers(false);
-          setShowAddMember(true);
-        }}
-      />
+      <GroupMembersDialog />
 
       <AddMemberDialog
         isOpen={showAddMember}
@@ -212,8 +183,6 @@ function DashboardInner() {
       />
 
       <DeleteGroupDialog
-        isOpen={showDeleteGroup}
-        onClose={() => setShowDeleteGroup(false)}
         onConfirm={handleDeleteGroup}
         isDeleting={deleteGroupMutation.isPending}
       />

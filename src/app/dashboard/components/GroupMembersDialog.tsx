@@ -21,11 +21,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDashboard } from "@/contexts/DashboardContext";
 import { fetchGroupDetail } from "@/hooks/useGroups";
 
-interface GroupMembersDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onAddMember: () => void;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface GroupMembersDialogProps {}
 
 const getRoleIcon = (role: string) => {
   switch (role) {
@@ -60,19 +57,20 @@ const getRoleBadgeClass = (role: string) => {
   }
 };
 
-export default function GroupMembersDialog({
-  isOpen,
-  onClose,
-  onAddMember,
-}: GroupMembersDialogProps) {
+export default function GroupMembersDialog({}: GroupMembersDialogProps) {
   const { user } = useAuth();
-  const { selectedGroupId } = useDashboard();
+  const {
+    selectedGroupId,
+    showGroupMembers,
+    setShowGroupMembers,
+    setShowAddMember,
+  } = useDashboard();
 
   // Fetch selected group details to get members
   const { data: selectedGroup, isLoading } = useQuery({
     queryKey: ["group", selectedGroupId],
     queryFn: () => fetchGroupDetail(selectedGroupId!),
-    enabled: !!selectedGroupId && isOpen,
+    enabled: !!selectedGroupId && showGroupMembers,
   });
 
   // Get current user's role in the selected group
@@ -88,8 +86,21 @@ export default function GroupMembersDialog({
   const groupName = selectedGroup?.name || "";
   const currentUserRole = getCurrentUserRole();
 
+  const handleClose = () => {
+    setShowGroupMembers(false);
+  };
+
+  const handleAddMember = () => {
+    setShowGroupMembers(false);
+    setShowAddMember(true);
+  };
+
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} className="max-w-md">
+    <Dialog
+      isOpen={showGroupMembers}
+      onClose={handleClose}
+      className="max-w-md"
+    >
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
           <Users className="w-5 h-5" />
@@ -156,14 +167,14 @@ export default function GroupMembersDialog({
       <DialogFooter>
         {(currentUserRole === "owner" || currentUserRole === "admin") && (
           <Button
-            onClick={onAddMember}
+            onClick={handleAddMember}
             className="bg-teal-600 hover:bg-teal-700"
           >
             <UserPlus className="w-4 h-4 mr-2" />
             Add Member
           </Button>
         )}
-        <Button variant="ghost" onClick={onClose} className="text-gray-300">
+        <Button variant="ghost" onClick={handleClose} className="text-gray-300">
           Close
         </Button>
       </DialogFooter>

@@ -9,16 +9,14 @@ import { Group } from "@/types/dashboard";
 import { getGroupAvatar } from "@/lib/dashboardUtils";
 
 interface DashboardSidebarProps {
-  onCreateGroup: () => void;
-  onCreateExpense: () => void;
   isCreatingGroup: boolean;
 }
 
 export default function DashboardSidebar({
-  onCreateGroup,
   isCreatingGroup,
 }: DashboardSidebarProps) {
-  const { selectedGroupId, setSelectedGroupId } = useDashboard();
+  const { selectedGroupId, setSelectedGroupId, setShowCreateGroupForm } =
+    useDashboard();
 
   const { data: groups = [] } = useQuery<Group[]>({
     queryKey: ["groups"],
@@ -46,7 +44,7 @@ export default function DashboardSidebar({
                 Start splitting expenses with friends and family
               </p>
               <Button
-                onClick={onCreateGroup}
+                onClick={() => setShowCreateGroupForm(true)}
                 className="bg-teal-600 hover:bg-teal-700 shadow-lg hover:shadow-teal-600/25 transition-all duration-200 font-medium px-6"
               >
                 <Plus className="w-4 h-4 mr-2" />
@@ -113,7 +111,7 @@ export default function DashboardSidebar({
           {groups.length > 0 && (
             <div className="mt-8 pt-6 border-t border-gray-700/50">
               <Button
-                onClick={onCreateGroup}
+                onClick={() => setShowCreateGroupForm(true)}
                 className="w-full bg-gray-800/50 hover:bg-gray-700/80 text-gray-300 hover:text-white border border-gray-700/50 hover:border-gray-600 font-medium transition-all duration-200 shadow-sm hover:shadow-md"
                 disabled={isCreatingGroup}
               >

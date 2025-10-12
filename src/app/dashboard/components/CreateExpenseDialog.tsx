@@ -10,46 +10,36 @@ import {
   DialogContent,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, Users, DollarSign } from "lucide-react";
+import { Loader2, Users } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDashboard } from "@/contexts/DashboardContext";
 import { fetchGroupDetail } from "@/hooks/useGroups";
 
 interface CreateExpenseDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  expense: {
-    description: string;
-    amount: string;
-    splits: { userId: string; amountOwed: number }[];
-  };
-  onExpenseChange: (expense: {
-    description: string;
-    amount: string;
-    splits: { userId: string; amountOwed: number }[];
-  }) => void;
   onSubmit: () => void;
   isCreating: boolean;
 }
 
 export default function CreateExpenseDialog({
-  isOpen,
-  onClose,
-  expense,
-  onExpenseChange,
   onSubmit,
   isCreating,
 }: CreateExpenseDialogProps) {
-  const { selectedGroupId } = useDashboard();
-  const [splitMode, setSplitMode] = useState<"equal" | "custom">("equal");
+  const {
+    selectedGroupId,
+    showCreateExpenseForm,
+    setShowCreateExpenseForm,
+    newExpense,
+    setNewExpense,
+    resetNewExpenseForm,
+  } = useDashboard();
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
 
   // Fetch selected group details to get members
   const { data: selectedGroup } = useQuery({
     queryKey: ["group", selectedGroupId],
     queryFn: () => fetchGroupDetail(selectedGroupId!),
-    enabled: !!selectedGroupId && isOpen,
+    enabled: !!selectedGroupId && showCreateExpenseForm,
   });
 
   const groupMembers = useMemo(
@@ -59,26 +49,30 @@ export default function CreateExpenseDialog({
 
   // Initialize selected members when dialog opens
   useEffect(() => {
-    if (isOpen && selectedMembers.length === 0 && groupMembers.length > 0) {
+    if (
+      showCreateExpenseForm &&
+      selectedMembers.length === 0 &&
+      groupMembers.length > 0
+    ) {
       setSelectedMembers(groupMembers.map((member) => member.userId));
     }
-  }, [isOpen, groupMembers, selectedMembers.length]);
+  }, [showCreateExpenseForm, groupMembers, selectedMembers.length]);
 
   // Calculate splits when amount or selected members change
   useEffect(() => {
-    if (expense.amount && selectedMembers.length > 0) {
-      const amount = parseFloat(expense.amount);
-      if (amount > 0 && splitMode === "equal") {
+    if (newExpense.amount && selectedMembers.length > 0) {
+      const amount = parseFloat(newExpense.amount);
+      if (amount > 0) {
         const amountPerPerson = amount / selectedMembers.length;
         const newSplits = selectedMembers.map((userId) => ({
           userId,
           amountOwed: amountPerPerson,
         }));
-        onExpenseChange({ ...expense, splits: newSplits });
+        setNewExpense({ ...newExpense, splits: newSplits });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expense.amount, selectedMembers, splitMode]);
+  }, [newExpense.amount, selectedMembers]);
 
   const handleMemberToggle = (userId: string) => {
     const newSelected = selectedMembers.includes(userId)
@@ -87,32 +81,18 @@ export default function CreateExpenseDialog({
     setSelectedMembers(newSelected);
   };
 
-  const handleCustomSplitChange = (userId: string, amount: string) => {
-    const numAmount = parseFloat(amount) || 0;
-    const newSplits = expense.splits.map((split) =>
-      split.userId === userId ? { ...split, amountOwed: numAmount } : split
-    );
-    onExpenseChange({ ...expense, splits: newSplits });
-  };
-
   const handleClose = () => {
-    setSplitMode("equal");
     setSelectedMembers([]);
-    onClose();
-  };
-
-  const getTotalSplit = () => {
-    return expense.splits.reduce((total, split) => total + split.amountOwed, 0);
-  };
-
-  const isValidSplit = () => {
-    const totalAmount = parseFloat(expense.amount) || 0;
-    const totalSplit = getTotalSplit();
-    return Math.abs(totalAmount - totalSplit) < 0.01; // Allow for small rounding errors
+    setShowCreateExpenseForm(false);
+    resetNewExpenseForm();
   };
 
   return (
-    <Dialog isOpen={isOpen} onClose={handleClose} className="max-w-2xl">
+    <Dialog
+      isOpen={showCreateExpenseForm}
+      onClose={handleClose}
+      className="max-w-2xl"
+    >
       <DialogHeader>
         <DialogTitle>Add New Expense</DialogTitle>
       </DialogHeader>
@@ -126,9 +106,9 @@ export default function CreateExpenseDialog({
               </Label>
               <Input
                 id="description"
-                value={expense.description}
+                value={newExpense.description}
                 onChange={(e) =>
-                  onExpenseChange({ ...expense, description: e.target.value })
+                  setNewExpense({ ...newExpense, description: e.target.value })
                 }
                 placeholder="What was this expense for?"
                 className="mt-2 bg-gray-600 border-gray-500 text-white"
@@ -144,9 +124,9 @@ export default function CreateExpenseDialog({
                 type="number"
                 step="0.01"
                 min="0"
-                value={expense.amount}
+                value={newExpense.amount}
                 onChange={(e) =>
-                  onExpenseChange({ ...expense, amount: e.target.value })
+                  setNewExpense({ ...newExpense, amount: e.target.value })
                 }
                 placeholder="0.00"
                 className="mt-2 bg-gray-600 border-gray-500 text-white"
@@ -154,35 +134,18 @@ export default function CreateExpenseDialog({
             </div>
           </div>
 
-          {/* Split Mode Selection */}
+          {/* Split Method */}
           <div>
             <Label className="text-white">Split Method</Label>
             <div className="flex gap-2 mt-2">
               <Button
                 type="button"
-                variant={splitMode === "equal" ? "default" : "ghost"}
-                onClick={() => setSplitMode("equal")}
-                className={`${
-                  splitMode === "equal"
-                    ? "bg-teal-600 hover:bg-teal-700"
-                    : "text-gray-300"
-                }`}
+                variant="default"
+                className="bg-teal-600 hover:bg-teal-700"
+                disabled
               >
                 <Users className="w-4 h-4 mr-2" />
                 Equal Split
-              </Button>
-              <Button
-                type="button"
-                variant={splitMode === "custom" ? "default" : "ghost"}
-                onClick={() => setSplitMode("custom")}
-                className={`${
-                  splitMode === "custom"
-                    ? "bg-teal-600 hover:bg-teal-700"
-                    : "text-gray-300"
-                }`}
-              >
-                <DollarSign className="w-4 h-4 mr-2" />
-                Custom Split
               </Button>
             </div>
           </div>
@@ -195,8 +158,9 @@ export default function CreateExpenseDialog({
             <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
               {groupMembers.map((member) => {
                 const isSelected = selectedMembers.includes(member.userId);
-                const memberSplit = expense.splits.find(
-                  (split) => split.userId === member.userId
+                const memberSplit = newExpense.splits.find(
+                  (split: { userId: string; amountOwed: number }) =>
+                    split.userId === member.userId
                 );
 
                 return (
@@ -227,26 +191,7 @@ export default function CreateExpenseDialog({
                       </div>
                     </div>
 
-                    {isSelected && splitMode === "custom" && (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-gray-400 text-sm">$</span>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={memberSplit?.amountOwed || 0}
-                          onChange={(e) =>
-                            handleCustomSplitChange(
-                              member.userId,
-                              e.target.value
-                            )
-                          }
-                          className="w-20 bg-gray-600 border-gray-500 text-white text-sm"
-                        />
-                      </div>
-                    )}
-
-                    {isSelected && splitMode === "equal" && memberSplit && (
+                    {isSelected && memberSplit && (
                       <div className="text-teal-400 font-medium">
                         ${memberSplit.amountOwed.toFixed(2)}
                       </div>
@@ -256,29 +201,6 @@ export default function CreateExpenseDialog({
               })}
             </div>
           </div>
-
-          {/* Split Summary */}
-          {splitMode === "custom" && expense.amount && (
-            <div className="bg-gray-800 p-3 rounded-lg">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400">Total Amount:</span>
-                <span className="text-white">${expense.amount}</span>
-              </div>
-              <div className="flex justify-between text-sm mt-1">
-                <span className="text-gray-400">Total Split:</span>
-                <span
-                  className={isValidSplit() ? "text-green-400" : "text-red-400"}
-                >
-                  ${getTotalSplit().toFixed(2)}
-                </span>
-              </div>
-              {!isValidSplit() && (
-                <div className="text-red-400 text-xs mt-1">
-                  Split amounts must equal the total expense amount
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </DialogContent>
       <DialogFooter>
@@ -288,10 +210,9 @@ export default function CreateExpenseDialog({
         <Button
           onClick={onSubmit}
           disabled={
-            !expense.description ||
-            !expense.amount ||
+            !newExpense.description ||
+            !newExpense.amount ||
             selectedMembers.length === 0 ||
-            (splitMode === "custom" && !isValidSplit()) ||
             isCreating
           }
           className="bg-teal-600 hover:bg-teal-700"

@@ -14,37 +14,34 @@ import { useDashboard } from "@/contexts/DashboardContext";
 import { fetchGroupDetail } from "@/hooks/useGroups";
 
 interface DeleteGroupDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
   onConfirm: () => void;
   isDeleting: boolean;
 }
 
 export default function DeleteGroupDialog({
-  isOpen,
-  onClose,
   onConfirm,
   isDeleting,
 }: DeleteGroupDialogProps) {
-  const { selectedGroupId } = useDashboard();
+  const { selectedGroupId, showDeleteGroup, setShowDeleteGroup } =
+    useDashboard();
 
   // Fetch selected group details to get group name
   const { data: selectedGroup } = useQuery({
     queryKey: ["group", selectedGroupId],
     queryFn: () => fetchGroupDetail(selectedGroupId!),
-    enabled: !!selectedGroupId && isOpen,
+    enabled: !!selectedGroupId && showDeleteGroup,
   });
 
   const groupName = selectedGroup?.name || "";
 
   const handleClose = () => {
     if (!isDeleting) {
-      onClose();
+      setShowDeleteGroup(false);
     }
   };
 
   return (
-    <Dialog isOpen={isOpen} onClose={handleClose}>
+    <Dialog isOpen={showDeleteGroup} onClose={handleClose}>
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2 text-red-400">
           <AlertTriangle className="w-5 h-5" />

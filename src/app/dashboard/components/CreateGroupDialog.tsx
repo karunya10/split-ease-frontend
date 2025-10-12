@@ -11,30 +11,40 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
+import { useDashboard } from "@/contexts/DashboardContext";
 
 interface CreateGroupDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  groupName: string;
-  onGroupNameChange: (name: string) => void;
-  onSubmit: (name: string) => void;
+  onSubmit: () => void;
   isCreating: boolean;
 }
 
 export default function CreateGroupDialog({
-  isOpen,
-  onClose,
-  groupName,
-  onGroupNameChange,
   onSubmit,
   isCreating,
 }: CreateGroupDialogProps) {
+  const {
+    showCreateGroupForm,
+    setShowCreateGroupForm,
+    newGroupName,
+    setNewGroupName,
+    resetNewGroupForm,
+  } = useDashboard();
+
   const handleSubmit = () => {
-    onSubmit(groupName);
+    onSubmit();
+  };
+
+  const handleClose = () => {
+    setShowCreateGroupForm(false);
+    resetNewGroupForm();
   };
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} className="max-w-md">
+    <Dialog
+      isOpen={showCreateGroupForm}
+      onClose={handleClose}
+      className="max-w-md"
+    >
       <DialogHeader>
         <DialogTitle>Create New Group</DialogTitle>
       </DialogHeader>
@@ -46,8 +56,8 @@ export default function CreateGroupDialog({
             </Label>
             <Input
               id="groupName"
-              value={groupName}
-              onChange={(e) => onGroupNameChange(e.target.value)}
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
               placeholder="Enter group name"
               className="mt-2 bg-gray-600 border-gray-500 text-white"
               autoFocus
@@ -60,12 +70,12 @@ export default function CreateGroupDialog({
         </div>
       </DialogContent>
       <DialogFooter>
-        <Button variant="ghost" onClick={onClose} className="text-gray-300">
+        <Button variant="ghost" onClick={handleClose} className="text-gray-300">
           Cancel
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={!groupName.trim() || isCreating}
+          disabled={!newGroupName.trim() || isCreating}
           className="bg-teal-600 hover:bg-teal-700"
         >
           {isCreating ? (
