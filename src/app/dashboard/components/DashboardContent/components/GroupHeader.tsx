@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
-import { GroupDetail} from "@/types/dashboard";
+import { Plus, Trash2, Edit2 } from "lucide-react";
+import { GroupDetail } from "@/types/dashboard";
 import { getGroupAvatar, formatDate } from "@/lib/dashboardUtils";
 
 interface GroupHeaderProps {
@@ -10,6 +10,7 @@ interface GroupHeaderProps {
   onAddExpense: () => void;
   onViewMembers: () => void;
   onDeleteGroup: () => void;
+  onEditGroup: () => void;
   currentUserRole: string;
 }
 
@@ -18,6 +19,7 @@ export default function GroupHeader({
   onAddExpense,
   onViewMembers,
   onDeleteGroup,
+  onEditGroup,
   currentUserRole,
 }: GroupHeaderProps) {
   return (
@@ -27,7 +29,18 @@ export default function GroupHeader({
           {getGroupAvatar(group.name)}
         </div>
         <div>
-          <h1 className="text-3xl font-bold">{group.name}</h1>
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-3xl font-bold">{group.name}</h1>
+            {(currentUserRole === "owner" || currentUserRole === "admin") && (
+              <button
+                onClick={onEditGroup}
+                className="text-gray-400 hover:text-teal-400 transition-colors p-1"
+                title="Edit group name"
+              >
+                <Edit2 className="w-5 h-5" />
+              </button>
+            )}
+          </div>
           <div className="flex items-center gap-4">
             <button
               onClick={onViewMembers}

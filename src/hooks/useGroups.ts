@@ -28,6 +28,11 @@ const deleteGroup = async (groupId: string): Promise<void> => {
   await api.delete(`/groups/${groupId}`);
 };
 
+const updateGroup = async (groupId: string, name: string): Promise<Group> => {
+  const { data } = await api.put(`/groups/${groupId}`, { name });
+  return data;
+};
+
 const fetchSettlementSummary = async (
   groupId: string
 ): Promise<SettlementSummary> => {
@@ -49,6 +54,13 @@ const createExpense = async (expense: {
 
 const markSettlementPaid = async (settlementId: string): Promise<void> => {
   await api.patch(`/groups/settlements/${settlementId}/paid`);
+};
+
+const deleteExpense = async (
+  groupId: string,
+  expenseId: string
+): Promise<void> => {
+  await api.delete(`/groups/${groupId}/expenses/${expenseId}`);
 };
 
 const addGroupMember = async (
@@ -75,9 +87,11 @@ export {
   fetchGroups,
   fetchGroupDetail,
   createGroup,
+  updateGroup,
   deleteGroup,
   fetchSettlementSummary,
   createExpense,
+  deleteExpense,
   markSettlementPaid,
   addGroupMember,
   searchUsers,

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, CreditCard } from "lucide-react";
+import { Plus, CreditCard, Trash2 } from "lucide-react";
 import { Expense, User } from "@/types/dashboard";
 import { formatCurrency, formatDate } from "@/lib/dashboardUtils";
 
@@ -10,12 +10,14 @@ interface ExpensesListProps {
   expenses: Expense[];
   currentUser: User;
   onAddExpense: () => void;
+  onDeleteExpense: (expenseId: string) => void;
 }
 
 export default function ExpensesList({
   expenses,
   currentUser,
   onAddExpense,
+  onDeleteExpense,
 }: ExpensesListProps) {
   return (
     <Card className="bg-gray-800 border-gray-700">
@@ -46,7 +48,7 @@ export default function ExpensesList({
               );
               const splitInfo = userSplit
                 ? `You owe ${formatCurrency(userSplit.amountOwed)}`
-                :  "You paid";
+                : "You paid";
 
               return (
                 <div
@@ -67,13 +69,24 @@ export default function ExpensesList({
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-white">
-                      {formatCurrency(expense.amount)}
-                    </p>
-                    <p className="text-sm text-gray-400">
-                      {formatDate(expense.createdAt)}
-                    </p>
+                  <div className="flex items-center space-x-4">
+                    <div className="text-right">
+                      <p className="font-semibold text-white">
+                        {formatCurrency(expense.amount)}
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        {formatDate(expense.createdAt)}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDeleteExpense(expense.id)}
+                      className="text-red-400 hover:text-red-300 hover:bg-red-900/20 p-2"
+                      title="Delete expense"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
               );

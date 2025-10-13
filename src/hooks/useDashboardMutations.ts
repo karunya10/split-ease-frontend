@@ -4,8 +4,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   createGroup,
+  updateGroup,
   deleteGroup,
   createExpense,
+  deleteExpense,
   markSettlementPaid,
   addGroupMember,
 } from "@/hooks/useGroups";
@@ -27,6 +29,26 @@ export function useDashboardMutations(selectedGroupId: string | null) {
     },
     onError: (error: ApiError) => {
       toast.error("Failed to create group", {
+        description:
+          error.response?.data?.message ||
+          "Something went wrong. Please try again.",
+      });
+    },
+  });
+
+  // Update group mutation
+  const updateGroupMutation = useMutation({
+    mutationFn: ({ groupId, name }: { groupId: string; name: string }) =>
+      updateGroup(groupId, name),
+    onSuccess: (updatedGroup: Group) => {
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      queryClient.invalidateQueries({ queryKey: ["group", updatedGroup.id] });
+      toast.success("Group updated!", {
+        description: `Group name has been updated to "${updatedGroup.name}".`,
+      });
+    },
+    onError: (error: ApiError) => {
+      toast.error("Failed to update group", {
         description:
           error.response?.data?.message ||
           "Something went wrong. Please try again.",
@@ -122,9 +144,38 @@ export function useDashboardMutations(selectedGroupId: string | null) {
     },
   });
 
+  // Delete expense mutation
+  const deleteExpenseMutation = useMutation({
+    mutationFn: ({
+      groupId,
+      expenseId,
+    }: {
+      groupId: string;
+      expenseId: string;
+    }) => deleteExpense(groupId, expenseId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["group", selectedGroupId] });
+      queryClient.invalidateQueries({
+        queryKey: ["settlement-summary", selectedGroupId],
+      });
+      toast.success("Expense deleted!", {
+        description: "The expense has been deleted successfully.",
+      });
+    },
+    onError: (error: ApiError) => {
+      toast.error("Failed to delete expense", {
+        description:
+          error.response?.data?.message ||
+          "Something went wrong. Please try again.",
+      });
+    },
+  });
+
   return {
     createGroupMutation,
+    updateGroupMutation,
     createExpenseMutation,
+    deleteExpenseMutation,
     markPaidMutation,
     deleteGroupMutation,
     addMemberMutation,
