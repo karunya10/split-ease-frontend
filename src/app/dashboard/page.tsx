@@ -58,7 +58,6 @@ function DashboardInner() {
     deleteGroupMutation,
   } = useDashboardMutations(selectedGroupId);
 
-  // Handlers
   const handleCreateGroup = async () => {
     if (newGroupName.trim()) {
       try {
@@ -99,9 +98,7 @@ function DashboardInner() {
   };
 
   const handleMemberAdded = () => {
-    // Refresh group data to show new member
     if (selectedGroupId) {
-      // Invalidate and refetch group data instead of full page reload
       queryClient.invalidateQueries({ queryKey: ["group", selectedGroupId] });
       queryClient.invalidateQueries({ queryKey: ["groups"] });
     }
@@ -109,28 +106,10 @@ function DashboardInner() {
 
   const handleDeleteGroup = () => {
     if (selectedGroupId) {
-      const deletedGroupId = selectedGroupId;
       deleteGroupMutation.mutate(selectedGroupId, {
         onSuccess: () => {
           setShowDeleteGroup(false);
-
-          // Clear selected group immediately
           setSelectedGroupId(null);
-
-          // The groups query will be invalidated by the mutation,
-          // but we can also optimistically update the local state
-          queryClient.setQueryData<Group[]>(["groups"], (oldGroups = []) => {
-            return oldGroups.filter((g) => g.id !== deletedGroupId);
-          });
-
-          // After optimistic update, select first remaining group if any
-          setTimeout(() => {
-            const updatedGroups =
-              queryClient.getQueryData<Group[]>(["groups"]) || [];
-            if (updatedGroups.length > 0) {
-              setSelectedGroupId(updatedGroups[0].id);
-            }
-          }, 100);
         },
       });
     }
