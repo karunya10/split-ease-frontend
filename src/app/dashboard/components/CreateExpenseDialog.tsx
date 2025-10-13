@@ -11,7 +11,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Loader2, Users } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDashboard } from "@/contexts/DashboardContext";
 import { fetchGroupDetail } from "@/hooks/useGroups";
@@ -42,10 +42,7 @@ export default function CreateExpenseDialog({
     enabled: !!selectedGroupId && showCreateExpenseForm,
   });
 
-  const groupMembers = useMemo(
-    () => selectedGroup?.members || [],
-    [selectedGroup?.members]
-  );
+  const groupMembers = selectedGroup?.members || [];
 
   // Initialize selected members when dialog opens
   useEffect(() => {
@@ -98,7 +95,6 @@ export default function CreateExpenseDialog({
       </DialogHeader>
       <DialogContent>
         <div className="space-y-6">
-          {/* Basic Info */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="description" className="text-white">
@@ -117,7 +113,7 @@ export default function CreateExpenseDialog({
             </div>
             <div>
               <Label htmlFor="amount" className="text-white">
-                Amount ($)
+                Amount (€)
               </Label>
               <Input
                 id="amount"
@@ -134,7 +130,6 @@ export default function CreateExpenseDialog({
             </div>
           </div>
 
-          {/* Split Method */}
           <div>
             <Label className="text-white">Split Method</Label>
             <div className="flex gap-2 mt-2">
@@ -150,7 +145,6 @@ export default function CreateExpenseDialog({
             </div>
           </div>
 
-          {/* Member Selection */}
           <div>
             <Label className="text-white">
               Select Members ({selectedMembers.length}/{groupMembers.length})

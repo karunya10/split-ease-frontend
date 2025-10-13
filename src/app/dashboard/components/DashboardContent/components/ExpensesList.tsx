@@ -24,14 +24,6 @@ export default function ExpensesList({
           <CreditCard className="w-5 h-5 mr-2" />
           Recent Expenses
         </CardTitle>
-        <Button
-          onClick={onAddExpense}
-          variant="ghost"
-          size="sm"
-          className="text-gray-400 hover:text-white"
-        >
-          Add expense
-        </Button>
       </CardHeader>
       <CardContent>
         {expenses.length === 0 ? (
@@ -48,15 +40,13 @@ export default function ExpensesList({
           </div>
         ) : (
           <div className="space-y-4">
-            {expenses.slice(0, 10).map((expense) => {
+            {expenses.map((expense) => {
               const userSplit = expense.splits.find(
                 (split) => split.userId === currentUser.id
               );
               const splitInfo = userSplit
                 ? `You owe ${formatCurrency(userSplit.amountOwed)}`
-                : expense.paidById === currentUser.id
-                ? "You paid"
-                : "Split equally";
+                :  "You paid";
 
               return (
                 <div

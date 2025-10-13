@@ -3,16 +3,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { User, Group } from "@/types/dashboard";
 import { useDashboard } from "@/contexts/DashboardContext";
-import {
-  fetchGroupDetail,
-  fetchSettlementSummary,
-  fetchGroups,
-} from "@/hooks/useGroups";
-import GroupHeader from "./GroupHeader";
-import ExpensesList from "./ExpensesList";
-import BalanceSummary from "./BalanceSummary";
-import SettlementsList from "./SettlementsList";
-import EmptyState from "./EmptyState";
+import { fetchGroupDetail, fetchGroups } from "@/hooks/useGroups";
+import GroupHeader from "./components/GroupHeader";
+import ExpensesList from "./components/ExpensesList";
+import BalanceSummary from "./components/BalanceSummary";
+import SettlementsList from "./components/SettlementsList";
+import EmptyState from "./components/EmptyState";
 
 interface DashboardContentProps {
   currentUser: User;
@@ -43,13 +39,6 @@ export default function DashboardContent({
     enabled: !!selectedGroupId,
   });
 
-  // Fetch settlement summary for selected group
-  const { data: settlementSummary } = useQuery({
-    queryKey: ["settlement-summary", selectedGroupId],
-    queryFn: () => fetchSettlementSummary(selectedGroupId!),
-    enabled: !!selectedGroupId,
-  });
-
   // Get current user's role in the selected group
   const getCurrentUserRole = () => {
     const currentUserMembership = selectedGroup?.members.find(
@@ -66,7 +55,6 @@ export default function DashboardContent({
     <div className="space-y-8">
       <GroupHeader
         group={selectedGroup}
-        settlementSummary={settlementSummary}
         onAddExpense={() => setShowCreateExpenseForm(true)}
         onViewMembers={() => setShowGroupMembers(true)}
         onDeleteGroup={() => setShowDeleteGroup(true)}
@@ -74,7 +62,6 @@ export default function DashboardContent({
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Expenses Section */}
         <div className="lg:col-span-2">
           <ExpensesList
             expenses={selectedGroup.expenses}

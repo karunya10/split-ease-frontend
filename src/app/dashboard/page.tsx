@@ -12,7 +12,7 @@ import { fetchGroups } from "@/hooks/useGroups";
 import { Group } from "@/types/dashboard";
 
 import DashboardSidebar from "./components/DashboardSidebar";
-import DashboardContent from "./components/DashboardContent";
+import DashboardContent from "./components/DashboardContent/DashboardContent";
 import CreateGroupDialog from "./components/CreateGroupDialog";
 import CreateExpenseDialog from "./components/CreateExpenseDialog";
 import GroupMembersDialog from "./components/GroupMembersDialog";
@@ -194,7 +194,6 @@ export default function Dashboard() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
-  // Redirect unauthenticated users to home
   useEffect(() => {
     if (!user && !isLoading) {
       router.push("/");
