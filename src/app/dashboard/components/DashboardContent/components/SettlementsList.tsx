@@ -44,10 +44,20 @@ export default function SettlementsList({
         ) : (
           <div className="space-y-3">
             {settlementSummary?.settlements.map((settlement) => {
-              const isOwed = settlement.toUserId === currentUser.id;
-              const otherUser = isOwed
+              const someoneOwesMe = settlement.toUserId === currentUser.id;
+
+              const otherPerson = someoneOwesMe
                 ? settlement.fromUser
                 : settlement.toUser;
+
+              const amountPrefix = someoneOwesMe ? "+" : "-";
+              const amountColor = someoneOwesMe
+                ? "text-green-400"
+                : "text-red-400";
+              const relationshipText = someoneOwesMe ? "owes you" : "you owe";
+
+              const canMarkAsPaid =
+                settlement.status === "PENDING" && !someoneOwesMe;
 
               return (
                 <div
@@ -56,33 +66,23 @@ export default function SettlementsList({
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-sm">
-                      {otherUser.name?.charAt(0) || otherUser.email.charAt(0)}
+                      {otherPerson.name?.charAt(0) ||
+                        otherPerson.email.charAt(0)}
                     </div>
                     <div>
                       <span className="text-white font-medium block">
-                        {otherUser.name || otherUser.email}
+                        {otherPerson.name || otherPerson.email}
                       </span>
-                      {settlement.status === "PAID" && (
-                        <span className="text-xs text-green-400 flex items-center">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Paid
-                        </span>
-                      )}
                     </div>
                   </div>
+
                   <div className="text-right">
-                    <p
-                      className={`font-semibold ${
-                        isOwed ? "text-green-400" : "text-red-400"
-                      }`}
-                    >
-                      {isOwed ? "+" : "-"}
+                    <p className={`font-semibold ${amountColor}`}>
+                      {amountPrefix}
                       {formatCurrency(settlement.amount)}
                     </p>
-                    <p className="text-xs text-gray-400">
-                      {isOwed ? "owes you" : "you owe"}
-                    </p>
-                    {settlement.status === "PENDING" && !isOwed && (
+                    <p className="text-xs text-gray-400">{relationshipText}</p>
+                    {canMarkAsPaid && (
                       <Button
                         size="sm"
                         variant="ghost"

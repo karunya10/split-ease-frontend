@@ -153,8 +153,7 @@ export default function CreateExpenseDialog({
               {groupMembers.map((member) => {
                 const isSelected = selectedMembers.includes(member.userId);
                 const memberSplit = newExpense.splits.find(
-                  (split: { userId: string; amountOwed: number }) =>
-                    split.userId === member.userId
+                  (split) => split.userId === member.userId
                 );
 
                 return (

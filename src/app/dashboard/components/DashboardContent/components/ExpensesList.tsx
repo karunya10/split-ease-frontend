@@ -78,15 +78,17 @@ export default function ExpensesList({
                         {formatDate(expense.createdAt)}
                       </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDeleteExpense(expense.id)}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-900/20 p-2"
-                      title="Delete expense"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    {expense.paidBy.id === currentUser.id && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDeleteExpense(expense.id)}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-900/20 p-2"
+                        title="Delete expense"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               );
