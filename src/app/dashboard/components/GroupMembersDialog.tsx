@@ -28,7 +28,7 @@ const getRoleIcon = (role: string) => {
   switch (role) {
     case "owner":
       return <Crown className="w-4 h-4 text-yellow-500" />;
-  
+
     default:
       return <UserIcon className="w-4 h-4 text-gray-500" />;
   }
@@ -163,7 +163,7 @@ export default function GroupMembersDialog({}: GroupMembersDialogProps) {
         )}
       </DialogContent>
       <DialogFooter>
-        {(currentUserRole === "owner") && (
+        {(currentUserRole === "owner" || "member") && (
           <Button
             onClick={handleAddMember}
             className="bg-teal-600 hover:bg-teal-700"

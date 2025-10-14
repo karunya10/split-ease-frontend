@@ -1,4 +1,9 @@
 import { useState, useEffect } from "react";
+import {
+  useSession,
+  signIn as nextAuthSignIn,
+  signOut as nextAuthSignOut,
+} from "next-auth/react";
 import api from "@/lib/api";
 
 interface User {
@@ -12,20 +17,34 @@ interface UseAuthReturn {
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name?: string) => Promise<void>;
   logout: () => void;
+  googleSignIn: () => Promise<void>;
   isLoading: boolean;
 }
 
 export function useAuth(): UseAuthReturn {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const checkAuth = async () => {
+      // If user is authenticated via NextAuth (Google), use the backend token
+      if (session?.backendToken && session?.backendUser) {
+        localStorage.setItem("splitease_token", session.backendToken);
+        setUser(session.backendUser);
+        setIsLoading(false);
+        return;
+      }
+
+      // Otherwise, verify using existing token
       await verify();
       setIsLoading(false);
     };
-    checkAuth();
-  }, []);
+
+    if (status !== "loading") {
+      checkAuth();
+    }
+  }, [session, status]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -60,9 +79,17 @@ export function useAuth(): UseAuthReturn {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     localStorage.removeItem("splitease_token");
     setUser(null);
+    // Also sign out from NextAuth if authenticated via Google
+    if (session) {
+      await nextAuthSignOut({ redirect: false });
+    }
+  };
+
+  const googleSignIn = async () => {
+    await nextAuthSignIn("google", { redirect: false });
   };
 
   return {
@@ -70,6 +97,7 @@ export function useAuth(): UseAuthReturn {
     login,
     signup,
     logout,
+    googleSignIn,
     isLoading,
   };
 }
