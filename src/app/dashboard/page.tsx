@@ -128,7 +128,11 @@ function DashboardInner() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <Header isAuthenticated={!!user} onLogout={logout} />
+      <Header
+        isAuthenticated={!!user}
+        user={user || undefined}
+        onLogout={logout}
+      />
 
       <div className="flex h-screen">
         <DashboardSidebar isCreatingGroup={createGroupMutation.isPending} />

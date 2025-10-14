@@ -1,11 +1,20 @@
 import { Button } from "@/components/ui/button";
+import ProfileDropdown from "@/components/ProfileDropdown";
 
 interface HeaderProps {
   isAuthenticated: boolean;
+  user?: {
+    name?: string;
+    email: string;
+  };
   onLogout?: () => void;
 }
 
-export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
+export default function Header({
+  isAuthenticated,
+  user,
+  onLogout,
+}: HeaderProps) {
   return (
     <header className="flex justify-between items-center p-6">
       <div className="flex items-center gap-2">
@@ -14,7 +23,9 @@ export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
       </div>
 
       <div className="flex gap-2">
-        {isAuthenticated && (
+        {isAuthenticated && user && onLogout ? (
+          <ProfileDropdown user={user} onLogout={onLogout} />
+        ) : isAuthenticated && onLogout ? (
           <Button
             onClick={onLogout}
             variant="outline"
@@ -22,7 +33,7 @@ export default function Header({ isAuthenticated, onLogout }: HeaderProps) {
           >
             Sign Out
           </Button>
-        )}
+        ) : null}
       </div>
     </header>
   );
