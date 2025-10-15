@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import ProfileDropdown from "@/components/ProfileDropdown";
+import Image from "next/image";
 
 interface HeaderProps {
   isAuthenticated: boolean;
@@ -18,7 +19,13 @@ export default function Header({
   return (
     <header className="flex justify-between items-center p-6">
       <div className="flex items-center gap-2">
-        <div className="w-6 h-6 bg-teal-400 rounded"></div>
+        <Image
+          src="/favicon.ico"
+          alt="SplitEase Logo"
+          width={32}
+          height={32}
+          className="w-8 h-8"
+        />
         <span className="text-xl font-semibold">SplitEase</span>
       </div>
 
