@@ -1,18 +1,17 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { BarChart3, Users, MessageCircle, Clock } from "lucide-react";
+import { Users, MessageCircle, Clock, Mail } from "lucide-react";
 
 const features = [
-  {
-    icon: BarChart3,
-    title: "Dashboard at a glance",
-    description:
-      "See total balance, active groups, and recent activity in one clean view.",
-    status: "available",
-  },
   {
     icon: Users,
     title: "Group management",
     description: "Create groups, add expenses, and invite friends seamlessly.",
+    status: "available",
+  },
+  {
+    icon: Mail,
+    title: "Email notification support",
+    description: "Email notification on expense creation",
     status: "available",
   },
   {
