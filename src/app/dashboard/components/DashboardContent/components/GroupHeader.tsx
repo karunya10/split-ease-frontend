@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Edit2 } from "lucide-react";
+import { Plus, Trash2, Edit2, MessageCircle } from "lucide-react";
 import { GroupDetail } from "@/types/dashboard";
 import { getGroupAvatar, formatDate } from "@/lib/dashboardUtils";
 
@@ -11,6 +11,7 @@ interface GroupHeaderProps {
   onViewMembers: () => void;
   onDeleteGroup: () => void;
   onEditGroup: () => void;
+  onOpenChat: () => void;
   currentUserRole: string;
 }
 
@@ -20,6 +21,7 @@ export default function GroupHeader({
   onViewMembers,
   onDeleteGroup,
   onEditGroup,
+  onOpenChat,
   currentUserRole,
 }: GroupHeaderProps) {
   return (
@@ -71,6 +73,13 @@ export default function GroupHeader({
           >
             <Plus className="w-4 h-4 mr-2" />
             Expense
+          </Button>
+          <Button
+            onClick={onOpenChat}
+            className="bg-blue-600 hover:bg-blue-700 flex-1"
+          >
+            <MessageCircle className="w-4 h-4 mr-2" />
+            Chat
           </Button>
           {currentUserRole === "owner" && (
             <Button

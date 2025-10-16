@@ -18,7 +18,6 @@ import { formatCurrency } from "@/lib/dashboardUtils";
 export function useDashboardMutations(selectedGroupId: string | null) {
   const queryClient = useQueryClient();
 
-  // Create group mutation
   const createGroupMutation = useMutation({
     mutationFn: (name: string) => createGroup(name),
     onSuccess: (newGroup: Group) => {
@@ -36,7 +35,6 @@ export function useDashboardMutations(selectedGroupId: string | null) {
     },
   });
 
-  // Update group mutation
   const updateGroupMutation = useMutation({
     mutationFn: ({ groupId, name }: { groupId: string; name: string }) =>
       updateGroup(groupId, name),
@@ -56,7 +54,6 @@ export function useDashboardMutations(selectedGroupId: string | null) {
     },
   });
 
-  // Create expense mutation
   const createExpenseMutation = useMutation({
     mutationFn: createExpense,
     onSuccess: (newExpense: Expense) => {
@@ -79,7 +76,6 @@ export function useDashboardMutations(selectedGroupId: string | null) {
     },
   });
 
-  // Mark settlement as paid mutation
   const markPaidMutation = useMutation({
     mutationFn: markSettlementPaid,
     onSuccess: () => {
@@ -99,14 +95,11 @@ export function useDashboardMutations(selectedGroupId: string | null) {
     },
   });
 
-  // Delete group mutation
   const deleteGroupMutation = useMutation({
     mutationFn: deleteGroup,
     onSuccess: (_, deletedGroupId) => {
-      // Invalidate groups list
       queryClient.invalidateQueries({ queryKey: ["groups"] });
 
-      // Remove the specific group from cache
       queryClient.removeQueries({ queryKey: ["group", deletedGroupId] });
       queryClient.removeQueries({
         queryKey: ["settlement-summary", deletedGroupId],
@@ -125,7 +118,6 @@ export function useDashboardMutations(selectedGroupId: string | null) {
     },
   });
 
-  // Add member mutation
   const addMemberMutation = useMutation({
     mutationFn: ({ userId, role }: { userId: string; role?: string }) =>
       addGroupMember(selectedGroupId!, userId, role),
@@ -144,7 +136,6 @@ export function useDashboardMutations(selectedGroupId: string | null) {
     },
   });
 
-  // Delete expense mutation
   const deleteExpenseMutation = useMutation({
     mutationFn: ({
       groupId,

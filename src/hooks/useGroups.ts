@@ -8,7 +8,6 @@ import {
   User,
 } from "@/types/dashboard";
 
-// API functions
 const fetchGroups = async (): Promise<Group[]> => {
   const { data } = await api.get("/groups");
   return data;
@@ -82,7 +81,6 @@ const searchUsers = async (query: string): Promise<User[]> => {
   return data.users || [];
 };
 
-// Export all API functions
 export {
   fetchGroups,
   fetchGroupDetail,

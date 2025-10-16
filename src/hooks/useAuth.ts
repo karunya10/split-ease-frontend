@@ -28,7 +28,6 @@ export function useAuth(): UseAuthReturn {
 
   useEffect(() => {
     const checkAuth = async () => {
-      // If user is authenticated via NextAuth (Google), use the backend token
       if (session?.backendToken && session?.backendUser) {
         localStorage.setItem("splitease_token", session.backendToken);
         setUser(session.backendUser);
@@ -36,7 +35,6 @@ export function useAuth(): UseAuthReturn {
         return;
       }
 
-      // Otherwise, verify using existing token
       await verify();
       setIsLoading(false);
     };
@@ -82,7 +80,6 @@ export function useAuth(): UseAuthReturn {
   const logout = async () => {
     localStorage.removeItem("splitease_token");
     setUser(null);
-    // Also sign out from NextAuth if authenticated via Google
     if (session) {
       await nextAuthSignOut({ redirect: false });
     }

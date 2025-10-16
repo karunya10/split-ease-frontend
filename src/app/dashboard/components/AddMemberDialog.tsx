@@ -34,7 +34,6 @@ export default function AddMemberDialog({
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
 
-  // Fetch selected group details to get group name
   const { data: selectedGroup } = useQuery({
     queryKey: ["group", selectedGroupId],
     queryFn: () => fetchGroupDetail(selectedGroupId!),
@@ -45,7 +44,6 @@ export default function AddMemberDialog({
   const { addMemberMutation } = useDashboardMutations(selectedGroupId);
   const userSearchMutation = useUserSearch();
 
-  // Search for users
   useEffect(() => {
     const searchUsers = async () => {
       if (searchQuery.trim().length < 2) {

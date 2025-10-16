@@ -12,7 +12,6 @@ interface DashboardContextType {
   selectedGroupId: string | null;
   setSelectedGroupId: (groupId: string | null) => void;
 
-  // Dialog states
   showCreateGroupForm: boolean;
   setShowCreateGroupForm: (show: boolean) => void;
   showCreateExpenseForm: boolean;
@@ -23,14 +22,14 @@ interface DashboardContextType {
   setShowAddMember: (show: boolean) => void;
   showDeleteGroup: boolean;
   setShowDeleteGroup: (show: boolean) => void;
+  showGroupChat: boolean;
+  setShowGroupChat: (show: boolean) => void;
 
-  // Form data states
   newGroupName: string;
   setNewGroupName: (name: string) => void;
   newExpense: NewExpense;
   setNewExpense: (expense: NewExpense) => void;
 
-  // Helper methods
   resetNewGroupForm: () => void;
   resetNewExpenseForm: () => void;
 }
@@ -42,14 +41,13 @@ const DashboardContext = createContext<DashboardContextType | undefined>(
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
-  // Dialog states
   const [showCreateGroupForm, setShowCreateGroupForm] = useState(false);
   const [showCreateExpenseForm, setShowCreateExpenseForm] = useState(false);
   const [showGroupMembers, setShowGroupMembers] = useState(false);
   const [showAddMember, setShowAddMember] = useState(false);
   const [showDeleteGroup, setShowDeleteGroup] = useState(false);
+  const [showGroupChat, setShowGroupChat] = useState(false);
 
-  // Form data states
   const [newGroupName, setNewGroupName] = useState("");
   const [newExpense, setNewExpense] = useState<NewExpense>({
     description: "",
@@ -57,7 +55,6 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     splits: [],
   });
 
-  // Helper methods
   const resetNewGroupForm = () => {
     setNewGroupName("");
   };
@@ -85,6 +82,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         setShowAddMember,
         showDeleteGroup,
         setShowDeleteGroup,
+        showGroupChat,
+        setShowGroupChat,
         newGroupName,
         setNewGroupName,
         newExpense,

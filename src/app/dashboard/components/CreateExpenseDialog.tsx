@@ -35,7 +35,6 @@ export default function CreateExpenseDialog({
   } = useDashboard();
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
 
-  // Fetch selected group details to get members
   const { data: selectedGroup } = useQuery({
     queryKey: ["group", selectedGroupId],
     queryFn: () => fetchGroupDetail(selectedGroupId!),
@@ -44,7 +43,6 @@ export default function CreateExpenseDialog({
 
   const groupMembers = selectedGroup?.members || [];
 
-  // Initialize selected members when dialog opens
   useEffect(() => {
     if (
       showCreateExpenseForm &&
@@ -55,7 +53,6 @@ export default function CreateExpenseDialog({
     }
   }, [showCreateExpenseForm, groupMembers, selectedMembers.length]);
 
-  // Calculate splits when amount or selected members change
   useEffect(() => {
     if (newExpense.amount && selectedMembers.length > 0) {
       const amount = parseFloat(newExpense.amount);

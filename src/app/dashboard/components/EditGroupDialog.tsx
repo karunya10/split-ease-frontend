@@ -38,7 +38,7 @@ export default function EditGroupDialog({
   };
 
   const handleClose = () => {
-    setGroupName(group.name); // Reset to original name when closing
+    setGroupName(group.name);
     onClose();
   };
 

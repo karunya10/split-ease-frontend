@@ -35,14 +35,12 @@ function DashboardInner() {
     resetNewExpenseForm,
   } = useDashboard();
 
-  // Fetch user's groups
   const { data: groups = [], error: groupsError } = useQuery<Group[]>({
     queryKey: ["groups"],
     queryFn: fetchGroups,
     enabled: !!user,
   });
 
-  // Set first group as selected when groups load
   useEffect(() => {
     if (groups.length > 0 && !selectedGroupId) {
       setSelectedGroupId(groups[0].id);
@@ -74,8 +72,6 @@ function DashboardInner() {
   };
 
   const handleCreateExpense = () => {
-    // We need to get selected group data for this operation
-    // This will be handled by fetching the group data in this component or the dialog
     if (selectedGroupId && newExpense.description && newExpense.amount) {
       const amount = parseFloat(newExpense.amount);
       if (amount > 0) {

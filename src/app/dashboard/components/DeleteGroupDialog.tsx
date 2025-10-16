@@ -25,7 +25,6 @@ export default function DeleteGroupDialog({
   const { selectedGroupId, showDeleteGroup, setShowDeleteGroup } =
     useDashboard();
 
-  // Fetch selected group details to get group name
   const { data: selectedGroup } = useQuery({
     queryKey: ["group", selectedGroupId],
     queryFn: () => fetchGroupDetail(selectedGroupId!),

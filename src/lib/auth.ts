@@ -12,7 +12,6 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         try {
-          // Send user data to your backend for authentication/registration
           const response = await fetch(
             `${
               process.env.NEXT_PUBLIC_SPLITEASE_BACKEND_URL ||
@@ -34,7 +33,6 @@ export const authOptions: NextAuthOptions = {
 
           if (response.ok) {
             const authData = await response.json();
-            // Store the backend token for later use
             user.backendToken = authData.token;
             user.backendUser = authData.user;
             return true;
@@ -48,7 +46,6 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async jwt({ token, user }) {
-      // Store backend token and user data in JWT
       if (user?.backendToken) {
         token.backendToken = user.backendToken;
         token.backendUser = user.backendUser;
@@ -56,7 +53,6 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      // Send backend token and user data to the client
       if (token.backendToken) {
         session.backendToken = token.backendToken as string;
         session.backendUser = token.backendUser;

@@ -12,6 +12,7 @@ import BalanceSummary from "./components/BalanceSummary";
 import SettlementsList from "./components/SettlementsList";
 import EmptyState from "./components/EmptyState";
 import EditGroupDialog from "../EditGroupDialog";
+import GroupChat from "../GroupChat";
 
 interface DashboardContentProps {
   currentUser: User;
@@ -29,35 +30,32 @@ export default function DashboardContent({
     setShowCreateExpenseForm,
     setShowGroupMembers,
     setShowDeleteGroup,
+    showGroupChat,
+    setShowGroupChat,
   } = useDashboard();
 
   const { updateGroupMutation, deleteExpenseMutation } =
     useDashboardMutations(selectedGroupId);
 
-  // Handle group update
   const handleUpdateGroup = (groupId: string, name: string) => {
     updateGroupMutation.mutate({ groupId, name });
   };
 
-  // Handle expense deletion
   const handleDeleteExpense = (expenseId: string) => {
     deleteExpenseMutation.mutate({ groupId: selectedGroupId!, expenseId });
   };
 
-  // Fetch user's groups for empty state check
   const { data: groups = [] } = useQuery<Group[]>({
     queryKey: ["groups"],
     queryFn: fetchGroups,
   });
 
-  // Fetch selected group details
   const { data: selectedGroup } = useQuery({
     queryKey: ["group", selectedGroupId],
     queryFn: () => fetchGroupDetail(selectedGroupId!),
     enabled: !!selectedGroupId,
   });
 
-  // Get current user's role in the selected group
   const getCurrentUserRole = () => {
     const currentUserMembership = selectedGroup?.members.find(
       (member) => member.userId === currentUser.id
@@ -77,6 +75,7 @@ export default function DashboardContent({
         onViewMembers={() => setShowGroupMembers(true)}
         onDeleteGroup={() => setShowDeleteGroup(true)}
         onEditGroup={() => setShowEditGroupDialog(true)}
+        onOpenChat={() => setShowGroupChat(true)}
         currentUserRole={getCurrentUserRole()}
       />
 
@@ -90,7 +89,6 @@ export default function DashboardContent({
           />
         </div>
 
-        {/* Balance & Settlements */}
         <div className="space-y-6">
           <BalanceSummary />
           <SettlementsList
@@ -100,7 +98,6 @@ export default function DashboardContent({
         </div>
       </div>
 
-      {/* Edit Group Dialog */}
       {showEditGroupDialog && (
         <EditGroupDialog
           isOpen={showEditGroupDialog}
@@ -108,6 +105,15 @@ export default function DashboardContent({
           group={selectedGroup}
           onUpdateGroup={handleUpdateGroup}
           isLoading={updateGroupMutation.isPending}
+        />
+      )}
+
+      {showGroupChat && selectedGroup && (
+        <GroupChat
+          isOpen={showGroupChat}
+          onClose={() => setShowGroupChat(false)}
+          groupId={selectedGroup.id}
+          groupName={selectedGroup.name}
         />
       )}
     </div>

@@ -10,7 +10,6 @@ import { formatCurrency, getBalanceColor } from "@/lib/dashboardUtils";
 export default function BalanceSummary() {
   const { selectedGroupId } = useDashboard();
 
-  // Fetch settlement summary for selected group
   const { data: settlementSummary } = useQuery({
     queryKey: ["settlement-summary", selectedGroupId],
     queryFn: () => fetchSettlementSummary(selectedGroupId!),

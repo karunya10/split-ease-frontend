@@ -64,14 +64,12 @@ export default function GroupMembersDialog({}: GroupMembersDialogProps) {
     setShowAddMember,
   } = useDashboard();
 
-  // Fetch selected group details to get members
   const { data: selectedGroup, isLoading } = useQuery({
     queryKey: ["group", selectedGroupId],
     queryFn: () => fetchGroupDetail(selectedGroupId!),
     enabled: !!selectedGroupId && showGroupMembers,
   });
 
-  // Get current user's role in the selected group
   const getCurrentUserRole = () => {
     if (!selectedGroup || !user) return "member";
     const currentUserMembership = selectedGroup.members.find(
