@@ -60,9 +60,9 @@ export default function AddMemberDialog({
       }
     };
 
-    const debounceTimer = setTimeout(searchUsers, 300);
-    return () => clearTimeout(debounceTimer);
-  }, [searchQuery, userSearchMutation]);
+    searchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
   const handleAddMember = async (user: User) => {
     try {

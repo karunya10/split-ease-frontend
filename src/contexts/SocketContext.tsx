@@ -23,9 +23,12 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     const token = localStorage.getItem("splitease_token");
     if (!token) return;
 
-    const newSocket = io("http://localhost:4000", {
-      auth: { token },
-    });
+    const newSocket = io(
+      process.env.NEXT_PUBLIC_SPLITEASE_BACKEND_URL || "http://localhost:4000",
+      {
+        auth: { token },
+      }
+    );
 
     newSocket.on("connect", () => {
       console.log("✅ Connected to chat");
