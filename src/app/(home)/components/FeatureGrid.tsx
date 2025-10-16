@@ -19,7 +19,7 @@ const features = [
     title: "Built-in chat",
     description:
       "Keep all conversations next to your expenses to reduce confusion.",
-    status: "coming-soon",
+    status: "available",
   },
 ];
 
