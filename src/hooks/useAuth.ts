@@ -74,6 +74,8 @@ export function useAuth(): UseAuthReturn {
       setUser(authData.user);
     } catch (error) {
       console.log(error);
+      localStorage.removeItem("splitease_token");
+      setUser(null);
     }
   };
 

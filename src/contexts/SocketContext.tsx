@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SocketContextType {
   socket: Socket | null;
@@ -44,6 +44,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       newSocket.close();
+      setSocket(null);
+      setIsConnected(false);
     };
   }, [user]);
 
